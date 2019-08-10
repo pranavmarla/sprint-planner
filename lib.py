@@ -1,6 +1,16 @@
 __author__ = 'Pranav Marla'
 
 
+# This generator function returns a generator iterator. Every time the generator iterator is iterated upon, it returns the next consecutive number.
+def consecutive_number_generator_function():
+
+    number = 1
+    
+    while True:
+        yield number
+        number += 1
+
+
 class Sprint:
 
     def __init__(self, id, end_date, name=None):
@@ -28,13 +38,13 @@ class Story:
         self.additional_fields = None
 
 
-# This generator function returns a generator iterator. Every time the generator iterator is iterated upon, it returns the next consecutive number.
-def consecutive_number_generator_function():
+        # Each element of the 'parents' list is a story ID.
+        if parents is None:
+        
+        self.has_children = has_children
 
-    number = 1
-    
-    while True:
-        yield number
-        number += 1
+        # When displaying the results at the end, the user might want the stories to display additional fields (eg. epic).
+        # Those fields are stored as a dict.
+        if additional_fields is None:
 
-#sprint_id_generator = consecutive_number_generator_function()
+    def __repr__(self):
