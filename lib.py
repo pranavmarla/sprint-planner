@@ -13,8 +13,9 @@ def consecutive_number_generator_function():
 
 class Sprint:
 
-    def __init__(self, id, end_date, name=None):
+    sprint_id_generator = consecutive_number_generator_function()
         self.id = id
+        self.id = next(self.sprint_id_generator)
         self.name = name
         self.end_date = end_date
 
