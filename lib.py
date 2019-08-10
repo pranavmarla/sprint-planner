@@ -14,39 +14,48 @@ def consecutive_number_generator_function():
 class Sprint:
 
     SPRINT_ID_GENERATOR = consecutive_number_generator_function()
-        self.id = id
-        self.id = next(self.sprint_id_generator)
+
+    def __init__(self, end_date, capacity, name=None):
+        
         self.id = next(self.SPRINT_ID_GENERATOR)
         self.name = name
         self.end_date = end_date
+        
+        # Measured in story points
+        self.capacity = capacity
+        
+        self.stories = []
+
+    def __repr__(self):
+        return 'Sprint(id={}, name={}, end_date={}, capacity={}, stories={})'.format(self.id, self.name, self.end_date, self.capacity, self.stories)
 
 
 class Story:
 
-    def __init__(self):
+    def __init__(self, id, name=None, size=1, priority=0, parents=None, has_children=False, additional_fields=None):
 
-        self.id = ''
-        self.name = ''
+        self.id = id
+        self.name = name
 
-        # Size (i.e. story points) and priority accept all non-negative values, including 0 and fractions.
-        self.size = 0
-        self.priority = 0
+        # Size accepts all non-negative values, including 0 and floating point numbers.
+        self.size = size
+        # Priority accepts all values, including negatie numbers, 0 and floating point numbers.
+        self.priority = priority
 
         # If story B depends on story A, A is a parent of B, and B is a child of A.
-        self.parents = []
-        self.has_children = False
-
-        # When displaying the results at the end, the user might want the stories to display additional fields (eg. epic).
-        self.additional_fields = None
-
 
         # Each element of the 'parents' list is a story ID.
         if parents is None:
+            parents = []
+        self.parents = parents
         
         self.has_children = has_children
 
         # When displaying the results at the end, the user might want the stories to display additional fields (eg. epic).
         # Those fields are stored as a dict.
         if additional_fields is None:
+            additional_fields = {}
+        self.additional_fields = additional_fields
 
-    def __repr__(self):
+    def __repr__(self):
+        return 'Story(id={}, name={}, size={}, priority={}, parents={}, has_children={}, additional_fields={})'.format(self.id, self.name, self.size, self.priority, self.parents, self.has_children, self.additional_fields)
