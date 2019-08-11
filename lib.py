@@ -15,19 +15,21 @@ class Sprint:
 
     SPRINT_ID_GENERATOR = consecutive_number_generator_function()
 
-    def __init__(self, end_date, capacity, name=None):
+    def __init__(self, end_date, total_capacity, name=None):
         
         self.id = next(self.SPRINT_ID_GENERATOR)
         self.name = name
         self.end_date = end_date
         
         # Measured in story points
-        self.capacity = capacity
+        # Accepts all non-negative values, including 0 and floating point numbers.
+        self.total_capacity = total_capacity
+        self.available_capacity = self.total_capacity
         
         self.stories = []
 
     def __repr__(self):
-        return 'Sprint(id={}, name={}, end_date={}, capacity={}, stories={})'.format(self.id, self.name, self.end_date, self.capacity, self.stories)
+        return 'Sprint(id={}, name={}, end_date={}, total_capacity={}, available_capacity={}, stories={})'.format(self.id, self.name, self.end_date, self.total_capacity, self.available_capacity, self.stories)
 
 
 class Story:
