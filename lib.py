@@ -34,7 +34,7 @@ class Sprint:
 
 class Story:
 
-    def __init__(self, id, name=None, size=1, priority=0, parents=None, has_children=False, additional_fields=None):
+    def __init__(self, id, name=None, size=1, priority=0, deadline=None, parents=None, has_children=False, additional_fields=None):
 
         self.id = id
         self.name = name
@@ -43,6 +43,8 @@ class Story:
         self.size = size
         # Priority accepts all values, including negatie numbers, 0 and floating point numbers.
         self.priority = priority
+
+        self.deadline = deadline
 
         # If story B depends on story A, A is a parent of B, and B is a child of A.
 
@@ -60,4 +62,4 @@ class Story:
         self.additional_fields = additional_fields
 
     def __repr__(self):
-        return 'Story(id={}, name={}, size={}, priority={}, parents={}, has_children={}, additional_fields={})'.format(self.id, self.name, self.size, self.priority, self.parents, self.has_children, self.additional_fields)
+        return 'Story(id={}, name={}, size={}, priority={}, deadline={}, parents={}, has_children={}, additional_fields={})'.format(self.id, self.name, self.size, self.priority, self.deadline, self.parents, self.has_children, self.additional_fields)
