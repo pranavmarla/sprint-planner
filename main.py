@@ -21,10 +21,11 @@ sprints = \
 #         Sprint(date(2019, 1, 28), 20)
 #     ]
 
-print('Sprints:')
-for sprint in sprints:
-    print('\t{}'.format(sprint))
-print()
+#! DEBUG
+# print('Sprints:')
+# for sprint in sprints:
+#     print('\t{}'.format(sprint))
+# print()
 
 stories = \
     [
@@ -43,17 +44,19 @@ stories = \
         Story(id='A', size=5, priority=1, deadline=date(2019, 1, 28))
     ]
 
-print('Stories, before sorting:')
-for story in stories:
-    print('\t{}'.format(story))
-print()
+#! DEBUG
+# print('Stories, before sorting:')
+# for story in stories:
+#     print('\t{}'.format(story))
+# print()
 
 lib.sort_stories(stories)
 
-print('Stories, after sorting:')
-for story in stories:
-    print('\t{}'.format(story))
-print()
+#! DEBUG
+# print('Stories, after sorting:')
+# for story in stories:
+#     print('\t{}'.format(story))
+# print()
 
 overflow_stories = lib.slot_stories(stories, sprints)
 
