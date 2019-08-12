@@ -35,26 +35,39 @@ class Sprint:
 
 class Story:
 
-    def __init__(self, id, name=None, size=1, priority=0, deadline=None, parents=None, has_children=False, additional_fields=None):
+    def __init__(self, id, name=None, size=1, priority=0, deadline=None, parents=None, children=None, additional_fields=None):
 
         self.id = id
         self.name = name
 
         # Size accepts all non-negative values, including 0 and floating point numbers.
         self.size = size
-        # Priority accepts all values, including negatie numbers, 0 and floating point numbers.
+        # Priority accepts all values, including negative numbers, 0 and floating point numbers.
         self.priority = priority
 
         self.deadline = deadline
 
         # If story B depends on story A, A is a parent of B, and B is a child of A.
 
-        # Each element of the 'parents' list is a story ID.
+        # Each element of the 'self.parents' list is a story.
         if parents is None:
             parents = []
         self.parents = parents
         
-        self.has_children = has_children
+        # Each element of the 'self.children' list is a story.
+        if children is None:
+            children = []
+        self.children = children
+
+        # For a story to be normalized:
+        # a) Its priority needs to be >= max(its children's priorities)
+        # b) Its deadline needs to be <= (min(its children's deadlines) - 1 day)
+        #
+        # If the story has no children, then it is already normalized by default.
+        if not self.children:
+            self.is_normalized = True
+        else:
+            self.is_normalized = False
 
         # When displaying the results at the end, the user might want the stories to display additional fields (eg. epic).
         # Those fields are stored as a dict.

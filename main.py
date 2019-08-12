@@ -35,18 +35,18 @@ stories = \
         Story(id='I', size=2, priority=-1, deadline=date(2019, 1, 28), parents=['F']),
         Story(id='H', size=3, priority=1, deadline=date(2019, 1, 28), parents=['F']),
         Story(id='G', size=3, priority=0, deadline=date(2019, 1, 28), parents=['F']),
-        Story(id='F', size=5, priority=1, deadline=date(2019, 1, 27), has_children=True, parents=['E']),
-        Story(id='E', size=3, priority=1, deadline=date(2019, 1, 26), has_children=True),
+        Story(id='F', size=5, priority=1, deadline=date(2019, 1, 27), parents=['E'], children=['G', 'H', 'I']),
+        Story(id='E', size=3, priority=1, deadline=date(2019, 1, 26), children=['F']),
         Story(id='D', size=5, priority=1, deadline=date(2019, 1, 26), parents=['C']),
-        Story(id='C', size=3, priority=1, deadline=date(2019, 1, 25), has_children=True, parents=['B']),
-        Story(id='B', size=2, priority=1, deadline=date(2019, 1, 24), has_children=True),
+        Story(id='C', size=3, priority=1, deadline=date(2019, 1, 25), parents=['B'], children=['D']),
+        Story(id='B', size=2, priority=1, deadline=date(2019, 1, 24), children=['C']),
         Story(id='A', size=5, priority=1, deadline=date(2019, 1, 28))
     ]
 
 print('Stories, before sorting:')
 for story in stories:
     print('\t{}'.format(story))
-print()        
+print()
 
 lib.sort_stories(stories)
 
