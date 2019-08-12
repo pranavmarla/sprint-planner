@@ -62,11 +62,11 @@ overflow_stories = lib.slot_stories(stories, sprints)
 
 print('Sprints, after slotting in stories:')
 for sprint in sprints:
-    print('---')
+    print('-------------')
     print('Sprint {}:\tCapacity remaining: {}/{}\n'.format(sprint.id, sprint.available_capacity, sprint.total_capacity))
     for story in sprint.stories:
         print('\t{}'.format(story.id))
-    print('---\n')
+    print('-------------\n')
 print()
 
 if overflow_stories:
