@@ -1,6 +1,13 @@
 __author__ = 'Pranav Marla'
 
+
+from datetime import date
 from operator import attrgetter
+
+
+# NOTE: date.resolution is the smallest possible difference between non-equal date objects (i.e. 1 day).
+ONE_DAY = date.resolution
+
 
 # This generator function returns a generator iterator. Every time the generator iterator is iterated upon, it returns the next consecutive number.
 def consecutive_number_generator_function():
@@ -48,7 +55,7 @@ class Story:
         self.deadline = deadline
 
         # If story B depends on story A, A is a parent of B, and B is a child of A.
-
+        
         #! DEBUG:
         #! Below, we say that parents and children are list of stories (not just story IDs), but customer will only be supplying us with story IDs!!
         # Each element of the 'self.children' list is a story.
@@ -74,6 +81,72 @@ class Story:
 
     def __repr__(self):
         return 'Story(id={}, name={}, size={}, priority={}, deadline={}, children={}, is_normalized = {}, additional_fields={})'.format(self.id, self.name, self.size, self.priority, self.deadline, self.children, self.is_normalized, self.additional_fields)
+
+
+# If stories B and C both depend on A then, for consistency, we need to ensure that:
+# a) A's priority is >= max(B and C's priorities)
+# b) A's deadline is <= (min(B and C's deadlines) - 1 day)
+#    NOTE: We make sure that A's deadline is at least 1 day before the earliest deadline of all the stories that depend on A to ensure that A is slotted out before the stories that depend on A (note that they can still end up in the same sprint together, but B/C should never end up in an EARLIER sprint than A)!
+#
+# If a story's priority and deadline adhere to the above rules regarding the corresponding values of its children, then we say that that story is 'normalized'.
+def normalize_stories(stories):
+
+    # dependent_values_dict is a dictionary mapping a tuple of story IDs [here: ('B', 'C')] to a tuple of their max priority and min deadline.
+    # The stories B and C depend on another story A (i.e. they are dependents of A).
+    dependent_values_dict = {}
+    
+    # For each story, calculate the max priority and min deadline of its children and potentially change its own priority and deadline based on those values (i.e. normalize the story).
+    for story in stories:
+        normalize_story(story, dependent_values_dict)
+
+#! DEBUG:
+#! a) Need to test this
+#! b) This can still potentially take exponential running time if every parent has a unique set of children.
+# Recursive helper function for normalize_stories()
+def normalize_story(story, dependent_values_dict, one_day=ONE_DAY):
+
+    # If the story is already normalized, there's nothing to do
+    if story.is_normalized:
+        return
+
+    # Note: When the story was created, if it had no children, we made sure to mark it as normalized right then -- so, at this point, if the story is not already normalized, we know it has children.
+    children = story.children
+
+    # Sort its list of children by their IDs, to ensure consistency when multiple parents query this same group of children.
+    children.sort(key=attrgetter('id'))
+
+    # See if the max priority and min deadline have already been calculated for this particular group of children.
+
+    # If they have, then they will be stored in dependent_values_dict with a key formed from the IDs of the sorted list of children.
+    key = tuple([child.id for child in children])
+    if key in dependent_values_dict:
+        max_priority, min_deadline = dependent_values_dict[key]
+    
+    # The max priority and min deadline have not already been calculated for this particular group of children.
+    else:
+
+        # First ensure each child is normalized
+        for child in children:
+            normalize_story(child, dependent_values_dict)
+        
+        # Then, using normalized priority and deadline values of all the children, calculate the max priority and min deadline for this group of children.
+        max_priority = max([child.priority for child in children])
+        min_deadline = min([child.deadline for child in children])
+
+        # Now that we've calculated the max priority and min deadline for this group of children, save those values to save us time with any future parents of this same group of children.
+        dependent_values_dict[key] = (max_priority, min_deadline)
+
+    if story.priority < max_priority:
+        story.priority = max_priority
+    
+    if story.deadline > (min_deadline - one_day):
+        story.deadline = min_deadline - one_day
+
+    # This story is now normalized
+    story.is_normalized = True
+
+    return
+
 
 # Sort stories using the following algorithm:
 # Given two stories A and B:
