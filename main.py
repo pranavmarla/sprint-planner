@@ -6,51 +6,36 @@ __author__ = 'Pranav Marla'
 from datetime import date, datetime
 import lib
 
-Sprint = lib.Sprint
-Story = lib.Story
 
-sprints = \
-    [
-        Sprint(date(2019, 1, 24), 15),
-        Sprint(date(2019, 1, 28), 15)
-    ]
+input_file_path = lib.parse_command_line_args()
 
-# sprints = \
-#     [
-#         Sprint(date(2019, 1, 24), 20),
-#         Sprint(date(2019, 1, 28), 20)
-#     ]
+sprints, stories, id_to_story_dict = lib.load_input_data(input_file_path)
+
+# Populate list of children
+lib.populate_children_from_ids(stories, id_to_story_dict)
+
 
 #! DEBUG
-# print('Sprints:')
-# for sprint in sprints:
-#     print('\t{}'.format(sprint))
-# print()
-
-stories = \
-    [
-        Story(id='M', size=1, priority=-1, deadline=date(2019, 1, 28)),
-        Story(id='L', size=3, priority=1, deadline=date(2019, 1, 28)),
-        Story(id='K', size=5, priority=-1, deadline=date(2019, 1, 28)),
-        Story(id='J', size=5, priority=0, deadline=date(2019, 1, 28)),
-        Story(id='I', size=2, priority=-1, deadline=date(2019, 1, 28)),
-        Story(id='H', size=3, priority=1, deadline=date(2019, 1, 28)),
-        Story(id='G', size=3, priority=0, deadline=date(2019, 1, 28)),
-        Story(id='F', size=5, priority=1, deadline=date(2019, 1, 27), children=['G', 'H', 'I']),
-        Story(id='E', size=3, priority=1, deadline=date(2019, 1, 26), children=['F']),
-        Story(id='D', size=5, priority=1, deadline=date(2019, 1, 26)),
-        Story(id='C', size=3, priority=1, deadline=date(2019, 1, 25), children=['D']),
-        Story(id='B', size=2, priority=1, deadline=date(2019, 1, 24), children=['C']),
-        Story(id='A', size=5, priority=1, deadline=date(2019, 1, 28))
-    ]
-
-#! DEBUG
-# print('Stories, before sorting:')
+# print('Stories, after populating kids, before normalizing:\n')
 # for story in stories:
-#     print('\t{}'.format(story))
+#     print('\t{}\n'.format(story))
 # print()
 
+
+# Normalize stories
+lib.normalize_stories(stories)
+
+
+#! DEBUG
+# print('Stories, after normalizing, before sorting:\n')
+# for story in stories:
+#     print('\t{}\n'.format(story))
+# print()
+
+
+# Sort stories
 lib.sort_stories(stories)
+
 
 #! DEBUG
 # print('Stories, after sorting:')
@@ -58,20 +43,32 @@ lib.sort_stories(stories)
 #     print('\t{}'.format(story))
 # print()
 
+
+# Slot stories
 overflow_stories = lib.slot_stories(stories, sprints)
+
+
 
 print('Sprints, after slotting in stories:')
 for sprint in sprints:
     print('-------------')
     print('Sprint {}:\tCapacity remaining: {}/{}\n'.format(sprint.id, sprint.available_capacity, sprint.total_capacity))
     for story in sprint.stories:
-        print('\t{}'.format(story.id))
+        print('\t{}'.format(story.id), end='')
+        if story.name:
+            print(': {}'.format(story.name))
+        else:
+            print()
     print('-------------\n')
 print()
 
 if overflow_stories:
     print('The following stories could not be slotted into any sprint:')
     for story in overflow_stories:
-        print('\t{}'.format(story.id))
+        print('\t{}'.format(story.id), end='')
+        if story.name:
+            print(': {}'.format(story.name))
+        else:
+            print()
 else:
     print('All stories were successfully slotted into sprints!')

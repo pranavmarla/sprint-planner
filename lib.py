@@ -1,12 +1,22 @@
 __author__ = 'Pranav Marla'
 
 
-from datetime import date
+import argparse
+from datetime import date, datetime
+import json
 from operator import attrgetter
 
 
 # NOTE: date.resolution is the smallest possible difference between non-equal date objects (i.e. 1 day).
 ONE_DAY = date.resolution
+
+# Max possible date (Dec 31, 9999)
+MAX_DATE = date.max
+
+# We can convert a string representation of a date to the corresponding date object as long as the string adheres to this format.
+# This format can be thought of as 'YYYY-MM-DD'
+# Eg. '2019-08-23'
+DATE_STRING_FORMAT = '%Y-%m-%d'
 
 
 # This generator function returns a generator iterator. Every time the generator iterator is iterated upon, it returns the next consecutive number.
@@ -23,10 +33,11 @@ class Sprint:
 
     SPRINT_ID_GENERATOR = consecutive_number_generator_function()
 
-    def __init__(self, end_date, total_capacity, name=None):
+    def __init__(self, start_date, end_date, total_capacity, name=None):
         
         self.id = next(self.SPRINT_ID_GENERATOR)
         self.name = name
+        self.start_date = start_date
         self.end_date = end_date
         
         # Measured in story points
@@ -37,12 +48,12 @@ class Sprint:
         self.stories = []
 
     def __repr__(self):
-        return 'Sprint(id={}, name={}, end_date={}, total_capacity={}, available_capacity={}, stories={})'.format(self.id, self.name, self.end_date, self.total_capacity, self.available_capacity, self.stories)
+        return 'Sprint(id={}, name={}, start_date={}, end_date={}, total_capacity={}, available_capacity={}, stories={})'.format(self.id, self.name, self.start_date, self.end_date, self.total_capacity, self.available_capacity, self.stories)
 
 
 class Story:
 
-    def __init__(self, id, name=None, size=1, priority=0, deadline=None, children=None, additional_fields=None):
+    def __init__(self, id, name=None, size=1, priority=0, deadline=MAX_DATE, children_ids=None):
 
         self.id = id
         self.name = name
@@ -56,31 +67,136 @@ class Story:
 
         # If story B depends on story A, A is a parent of B, and B is a child of A.
         
-        #! DEBUG:
-        #! Below, we say that parents and children are list of stories (not just story IDs), but customer will only be supplying us with story IDs!!
-        # Each element of the 'self.children' list is a story.
-        if children is None:
-            children = []
-        self.children = children
+        if children_ids is None:
+            children_ids = []
+        # For consistency, so that we can easily tell when two stories share the same group of children, sort their IDs.
+        children_ids.sort()
+
+        # Each element of the 'self.children_ids' list is a story ID (i.e. a string).
+        self.children_ids = children_ids
+        
+        # Each element of the 'self.children' list will be an actual story whose ID is the corresponding element in the 'self.children_ids' list.
+        # We will populate this list later.
+        self.children = []
 
         # For a story to be normalized:
         # a) Its priority needs to be >= max(its children's priorities)
         # b) Its deadline needs to be <= (min(its children's deadlines) - 1 day)
         #
         # If the story has no children, then it is already normalized by default.
-        if not self.children:
+        if not self.children_ids:
             self.is_normalized = True
         else:
             self.is_normalized = False
 
-        # When displaying the results at the end, the user might want the stories to display additional fields (eg. epic).
-        # Those fields are stored as a dict.
-        if additional_fields is None:
-            additional_fields = {}
-        self.additional_fields = additional_fields
-
     def __repr__(self):
-        return 'Story(id={}, name={}, size={}, priority={}, deadline={}, children={}, is_normalized = {}, additional_fields={})'.format(self.id, self.name, self.size, self.priority, self.deadline, self.children, self.is_normalized, self.additional_fields)
+        return 'Story(id={}, name={}, size={}, priority={}, deadline={}, children_ids={}, children={}, is_normalized={})'.format(self.id, self.name, self.size, self.priority, self.deadline, self.children_ids, self.children, self.is_normalized)
+
+
+def parse_command_line_args():
+
+    arg_parser = argparse.ArgumentParser()
+    
+    # For ease of maintenance, make all arguments optional
+    # Note: If any of the arguments are not supplied, their value with either be None or whatever alternate default value we specify below.
+    # To make it easy to clean up the arguments, ensure their default values are valid strings.
+    arg_parser.add_argument('--input', default='')
+
+    args = arg_parser.parse_args()
+    
+    # For safety, remove any extraneous whitespace
+    return \
+        (
+            args.input.strip()
+        )
+
+
+# input_file_path is a string containing the file path of the input file
+def load_input_data(input_file_path):
+
+    with open(input_file_path) as input_file:
+        input_dict = json.load(input_file)
+    
+    sprints = load_sprint_data(input_dict)
+    stories, id_to_story_dict = load_story_data(input_dict)
+
+    return (sprints, stories, id_to_story_dict)
+
+
+def load_sprint_data(input_dict):
+
+    sprints = []
+    sprint_dicts_list = input_dict['sprints']
+
+    for sprint_dict in sprint_dicts_list:
+
+        # Dictionary containing the arguments to be provided when creating a new Sprint object.
+        # Initialize it with the mandatory arguments.
+        sprint_constructor_args_dict = {'start_date': convert_str_to_date(sprint_dict['start_date']), 'end_date': convert_str_to_date(sprint_dict['end_date']), 'total_capacity': sprint_dict['capacity']}
+
+        # If the optional arguments are present, add them as well
+        if 'name' in sprint_dict:
+            sprint_constructor_args_dict['name'] = sprint_dict['name']
+
+        # Now that we've assembled all the arguments, use them to create a new Sprint object and add it to the list of Sprint objects
+        sprints.append(Sprint(**sprint_constructor_args_dict))
+    
+    # To be safe, sort sprints by their end date
+    sprints.sort(key=attrgetter('end_date'))
+
+    return sprints
+
+
+# Given a string representation of a date, return the corresponding date object
+def convert_str_to_date(date_string, date_string_format=DATE_STRING_FORMAT):
+    # Eg. Given a date string of '2019-08-23', and a date string format of '%Y-%m-%d', this function will return the corresponding date object: datetime.date(2019, 8, 23).
+    return(datetime.strptime(date_string, date_string_format).date())
+
+
+def load_story_data(input_dict, default_deadline=MAX_DATE):
+
+    stories = []
+    story_dicts_list = input_dict['stories']
+
+    # Dictionary mapping story ID (a string) to the corresponding Story object
+    id_to_story_dict = {}
+
+    for story_dict in story_dicts_list:
+
+        # Dictionary containing the arguments to be provided when creating a new Story object.
+        # Initialize it with the mandatory arguments.
+        story_constructor_args_dict = {'id': story_dict['id']}
+
+        # If the optional arguments are present, add them as well
+
+        if 'name' in story_dict:
+            story_constructor_args_dict['name'] = story_dict['name']
+        
+        if 'size' in story_dict:
+            story_constructor_args_dict['size'] = story_dict['size']
+        
+        if 'priority' in story_dict:
+            story_constructor_args_dict['priority'] = story_dict['priority']
+        
+        if 'deadline' in story_dict:
+            story_constructor_args_dict['deadline'] = convert_str_to_date(story_dict['deadline'])
+        
+        if 'dependents' in story_dict:
+            story_constructor_args_dict['children_ids'] = story_dict['dependents']
+
+        # Now that we've assembled all the arguments, use them to create a new Story object and add it to the list of Story objects
+        story = Story(**story_constructor_args_dict)
+        stories.append(story)
+        id_to_story_dict[story.id] = story
+
+    return stories, id_to_story_dict
+
+
+# At this point, each story has a list of the (string) IDs of its children, but its list of the actual children themselves is empty -- populate the latter list with the children whose IDs are the corresponding elements in the former list.
+def populate_children_from_ids(stories, id_to_story_dict):
+    for story in stories:
+        for child_id in story.children_ids:
+            story.children.append(id_to_story_dict[child_id])
 
 
 # If stories B and C both depend on A then, for consistency, we need to ensure that:
@@ -98,6 +214,10 @@ def normalize_stories(stories):
     # For each story, calculate the max priority and min deadline of its children and potentially change its own priority and deadline based on those values (i.e. normalize the story).
     for story in stories:
         normalize_story(story, dependent_values_dict)
+    
+    #! DEBUG
+    # print('\ndependent_values_dict:\n{}\n'.format(dependent_values_dict))
+
 
 #! DEBUG:
 #! a) Need to test this
@@ -167,6 +287,8 @@ def sort_stories(stories):
     stories.sort(key=attrgetter('priority'), reverse=True)
 
 
+#! DEBUG: Test this with a sprint that can take in a story, but the story's deadline is already passed -- should not be slotted in!
+
 # Slot stories into sprints, following the order of the 'stories' list (if story A appears before story B in the 'stories' list, then A will be slotted into a sprint before B) and the 'sprints' list (if sprint 1 appears before sprint 2 in the 'sprints' list, then we will attempt to slot stories into sprint 1 before sprint 2)
 # Note that, depending on how much space is left in each sprint, even though we try to slot story A into one of the sprints before trying to slot story B, if B is smaller than A, B might end up in an earlier sprint than A (i.e. if that sprint didn't have enough space for A, forcing A to go to the next sprint, but had enough space for B).
 def slot_stories(stories, sprints):
@@ -187,7 +309,7 @@ def slot_stories(stories, sprints):
         # Try to slot the story into the first sprint that has enough space for it
         for sprint in available_sprints:
 
-            if sprint.available_capacity >= story_size:
+            if (sprint.available_capacity >= story_size) and (sprint.start_date <= story.deadline):
                 sprint.stories.append(story)
                 sprint.available_capacity -= story_size
                 stories.remove(story)
