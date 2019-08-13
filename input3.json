@@ -49,7 +49,7 @@
         {
             "id": "F",
             "size": 5,
-            "prerequisiteFor":
+            "prerequisite_for":
             [
                 "G",
                 "H",
@@ -59,7 +59,7 @@
         {
             "id": "E",
             "size": 3,
-            "prerequisiteFor":
+            "prerequisite_for":
             [
                 "F"
             ]
@@ -73,7 +73,7 @@
         {
             "id": "C",
             "size": 3,
-            "prerequisiteFor":
+            "prerequisite_for":
             [
                 "D"
             ]
@@ -81,7 +81,7 @@
         {
             "id": "B",
             "size": 2,
-            "prerequisiteFor":
+            "prerequisite_for":
             [
                 "C"
             ]

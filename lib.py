@@ -181,8 +181,8 @@ def load_story_data(input_dict, default_deadline=MAX_DATE):
         if 'deadline' in story_dict:
             story_constructor_args_dict['deadline'] = convert_str_to_date(story_dict['deadline'])
         
-        if 'prerequisiteFor' in story_dict:
-            story_constructor_args_dict['children_ids'] = story_dict['prerequisiteFor']
+        if 'prerequisite_for' in story_dict:
+            story_constructor_args_dict['children_ids'] = story_dict['prerequisite_for']
 
         # Now that we've assembled all the arguments, use them to create a new Story object and add it to the list of Story objects
         story = Story(**story_constructor_args_dict)
