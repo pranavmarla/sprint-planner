@@ -207,23 +207,23 @@ def populate_children_from_ids(stories, id_to_story_dict):
 # If a story's priority and deadline adhere to the above rules regarding the corresponding values of its children, then we say that that story is 'normalized'.
 def normalize_stories(stories):
 
-    # dependent_values_dict is a dictionary mapping a tuple of story IDs [here: ('B', 'C')] to a tuple of their max priority and min deadline.
+    # children_values_dict is a dictionary mapping a tuple of story IDs [here: ('B', 'C')] to a tuple of their max priority and min deadline.
     # The stories B and C depend on another story A (i.e. they are dependents of A).
-    dependent_values_dict = {}
+    children_values_dict = {}
     
     # For each story, calculate the max priority and min deadline of its children and potentially change its own priority and deadline based on those values (i.e. normalize the story).
     for story in stories:
-        normalize_story(story, dependent_values_dict)
+        normalize_story(story, children_values_dict)
     
     #! DEBUG
-    # print('\ndependent_values_dict:\n{}\n'.format(dependent_values_dict))
+    # print('\nchildren_values_dict:\n{}\n'.format(children_values_dict))
 
 
 #! DEBUG:
 #! a) Need to test this
 #! b) This can still potentially take exponential running time if every parent has a unique set of children.
 # Recursive helper function for normalize_stories()
-def normalize_story(story, dependent_values_dict, one_day=ONE_DAY):
+def normalize_story(story, children_values_dict, one_day=ONE_DAY):
 
     # If the story is already normalized, there's nothing to do
     if story.is_normalized:
@@ -237,24 +237,24 @@ def normalize_story(story, dependent_values_dict, one_day=ONE_DAY):
 
     # See if the max priority and min deadline have already been calculated for this particular group of children.
 
-    # If they have, then they will be stored in dependent_values_dict with a key formed from the IDs of the sorted list of children.
+    # If they have, then they will be stored in children_values_dict with a key formed from the IDs of the sorted list of children.
     key = tuple([child.id for child in children])
-    if key in dependent_values_dict:
-        max_priority, min_deadline = dependent_values_dict[key]
+    if key in children_values_dict:
+        max_priority, min_deadline = children_values_dict[key]
     
     # The max priority and min deadline have not already been calculated for this particular group of children.
     else:
 
         # First ensure each child is normalized
         for child in children:
-            normalize_story(child, dependent_values_dict)
+            normalize_story(child, children_values_dict)
         
         # Then, using normalized priority and deadline values of all the children, calculate the max priority and min deadline for this group of children.
         max_priority = max([child.priority for child in children])
         min_deadline = min([child.deadline for child in children])
 
         # Now that we've calculated the max priority and min deadline for this group of children, save those values to save us time with any future parents of this same group of children.
-        dependent_values_dict[key] = (max_priority, min_deadline)
+        children_values_dict[key] = (max_priority, min_deadline)
 
     if story.priority < max_priority:
         story.priority = max_priority
