@@ -19,7 +19,7 @@
             "size": 5,
             "priority": -3.5,
             "deadline": "2019-01-27",
-            "dependents":
+            "prerequisiteFor":
             [
                 "B"
             ]
