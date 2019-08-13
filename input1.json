@@ -1,0 +1,32 @@
+{
+    "sprints":
+    [
+        {
+            "start_date": "2019-02-21",
+            "end_date": "2019-02-24",
+            "capacity": 15
+        },
+        {
+            "start_date": "2019-01-25",
+            "end_date": "2019-01-28",
+            "capacity": 15
+        }
+    ],
+    "stories":
+    [
+        {
+            "id": "A",
+            "size": 5,
+            "priority": -3.5,
+            "deadline": "2019-01-27",
+            "dependents":
+            [
+                "B"
+            ]
+        },
+        {
+            "id": "B",
+            "name": "My awesome story"
+        }
+    ]
+}
