@@ -208,7 +208,6 @@ def populate_children_from_ids(stories, id_to_story_dict):
 def normalize_stories(stories):
 
     # children_values_dict is a dictionary mapping a tuple of story IDs [here: ('B', 'C')] to a tuple of their max priority and min deadline.
-    # The stories B and C depend on another story A (i.e. they are dependents of A).
     children_values_dict = {}
     
     # For each story, calculate the max priority and min deadline of its children and potentially change its own priority and deadline based on those values (i.e. normalize the story).
