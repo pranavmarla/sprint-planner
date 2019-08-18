@@ -68,7 +68,7 @@
             "id": "D",
             "size": 5,
             "priority": 1,
-            "deadline": "2019-01-26"
+            "end_date": "2019-01-26"
         },
         {
             "id": "C",

@@ -18,7 +18,7 @@
             "id": "A",
             "size": 5,
             "priority": -3.5,
-            "deadline": "2019-01-27",
+            "end_date": "2019-01-27",
             "prerequisite_for":
             [
                 "B"

@@ -53,7 +53,7 @@ class Sprint:
 
 class Story:
 
-    def __init__(self, id, name=None, size=1, priority=0, deadline=MAX_DATE, children_ids=None):
+    def __init__(self, id, name=None, size=1, priority=0, end_date=MAX_DATE, children_ids=None):
 
         self.id = id
         self.name = name
@@ -63,7 +63,7 @@ class Story:
         # Priority accepts all values, including negative numbers, 0 and floating point numbers.
         self.priority = priority
 
-        self.deadline = deadline
+        self.end_date = end_date
 
         # If story B depends on story A, A is a parent of B, and B is a child of A.
         
@@ -81,7 +81,7 @@ class Story:
 
         # For a story to be normalized:
         # a) Its priority needs to be >= max(its children's priorities)
-        # b) Its deadline needs to be <= (min(its children's deadlines) - 1 day)
+        # b) Its end_date needs to be <= (min(its children's end dates) - 1 day)
         #
         # If the story has no children, then it is already normalized by default.
         if not self.children_ids:
@@ -90,7 +90,7 @@ class Story:
             self.is_normalized = False
 
     def __repr__(self):
-        return 'Story(id={}, name={}, size={}, priority={}, deadline={}, children_ids={}, children={}, is_normalized={})'.format(self.id, self.name, self.size, self.priority, self.deadline, self.children_ids, self.children, self.is_normalized)
+        return 'Story(id={}, name={}, size={}, priority={}, end_date={}, children_ids={}, children={}, is_normalized={})'.format(self.id, self.name, self.size, self.priority, self.end_date, self.children_ids, self.children, self.is_normalized)
 
 
 def parse_command_line_args():
@@ -153,7 +153,7 @@ def convert_str_to_date(date_string, date_string_format=DATE_STRING_FORMAT):
     return(datetime.strptime(date_string, date_string_format).date())
 
 
-def load_story_data(input_dict, default_deadline=MAX_DATE):
+def load_story_data(input_dict, default_end_date=MAX_DATE):
 
     stories = []
     story_dicts_list = input_dict['stories']
@@ -178,8 +178,8 @@ def load_story_data(input_dict, default_deadline=MAX_DATE):
         if 'priority' in story_dict:
             story_constructor_args_dict['priority'] = story_dict['priority']
         
-        if 'deadline' in story_dict:
-            story_constructor_args_dict['deadline'] = convert_str_to_date(story_dict['deadline'])
+        if 'end_date' in story_dict:
+            story_constructor_args_dict['end_date'] = convert_str_to_date(story_dict['end_date'])
         
         if 'prerequisite_for' in story_dict:
             story_constructor_args_dict['children_ids'] = story_dict['prerequisite_for']
@@ -201,16 +201,16 @@ def populate_children_from_ids(stories, id_to_story_dict):
 
 # If stories B and C both depend on A then, for consistency, we need to ensure that:
 # a) A's priority is >= max(B and C's priorities)
-# b) A's deadline is <= (min(B and C's deadlines) - 1 day)
-#    NOTE: We make sure that A's deadline is at least 1 day before the earliest deadline of all the stories that depend on A to ensure that A is slotted out before the stories that depend on A (note that they can still end up in the same sprint together, but B/C should never end up in an EARLIER sprint than A)!
+# b) A's end_date is <= (min(B and C's end dates) - 1 day)
+#    NOTE: We make sure that A's end_date is at least 1 day before the earliest end_date of all the stories that depend on A to ensure that A is slotted out before the stories that depend on A (note that they can still end up in the same sprint together, but B/C should never end up in an EARLIER sprint than A)!
 #
-# If a story's priority and deadline adhere to the above rules regarding the corresponding values of its children, then we say that that story is 'normalized'.
+# If a story's priority and end_date adhere to the above rules regarding the corresponding values of its children, then we say that that story is 'normalized'.
 def normalize_stories(stories):
 
-    # children_values_dict is a dictionary mapping a tuple of story IDs [here: ('B', 'C')] to a tuple of their max priority and min deadline.
+    # children_values_dict is a dictionary mapping a tuple of story IDs [here: ('B', 'C')] to a tuple of their max priority and min end_date.
     children_values_dict = {}
     
-    # For each story, calculate the max priority and min deadline of its children and potentially change its own priority and deadline based on those values (i.e. normalize the story).
+    # For each story, calculate the max priority and min end_date of its children and potentially change its own priority and end_date based on those values (i.e. normalize the story).
     for story in stories:
         normalize_story(story, children_values_dict)
     
@@ -234,32 +234,32 @@ def normalize_story(story, children_values_dict, one_day=ONE_DAY):
     # Sort its list of children by their IDs, to ensure consistency when multiple parents query this same group of children.
     children.sort(key=attrgetter('id'))
 
-    # See if the max priority and min deadline have already been calculated for this particular group of children.
+    # See if the max priority and min end_date have already been calculated for this particular group of children.
 
     # If they have, then they will be stored in children_values_dict with a key formed from the IDs of the sorted list of children.
     key = tuple([child.id for child in children])
     if key in children_values_dict:
         max_priority, min_deadline = children_values_dict[key]
     
-    # The max priority and min deadline have not already been calculated for this particular group of children.
+    # The max priority and min end_date have not already been calculated for this particular group of children.
     else:
 
         # First ensure each child is normalized
         for child in children:
             normalize_story(child, children_values_dict)
         
-        # Then, using normalized priority and deadline values of all the children, calculate the max priority and min deadline for this group of children.
+        # Then, using normalized priority and end_date values of all the children, calculate the max priority and min end_date for this group of children.
         max_priority = max([child.priority for child in children])
-        min_deadline = min([child.deadline for child in children])
+        min_end_date = min([child.end_date for child in children])
 
-        # Now that we've calculated the max priority and min deadline for this group of children, save those values to save us time with any future parents of this same group of children.
-        children_values_dict[key] = (max_priority, min_deadline)
+        # Now that we've calculated the max priority and min end_date for this group of children, save those values to save us time with any future parents of this same group of children.
+        children_values_dict[key] = (max_priority, min_end_date)
 
     if story.priority < max_priority:
         story.priority = max_priority
     
-    if story.deadline > (min_deadline - one_day):
-        story.deadline = min_deadline - one_day
+    if story.end_date > (min_end_date - one_day):
+        story.end_date = min_end_date - one_day
 
     # This story is now normalized
     story.is_normalized = True
@@ -270,8 +270,8 @@ def normalize_story(story, children_values_dict, one_day=ONE_DAY):
 # Sort stories using the following algorithm:
 # Given two stories A and B:
 # If A has a higher priority than B, then A is sorted ahead of B.
-# If their priorities are the same, but A has an earlier deadline than B, then A is sorted ahead of B.
-# If their priorities and deadlines are the same, but A is bigger than B, then A is sorted ahead of B.
+# If their priorities are the same, but A has an earlier end_date than B, then A is sorted ahead of B.
+# If their priorities and end dates are the same, but A is bigger than B, then A is sorted ahead of B.
 def sort_stories(stories):
 
     # To get the resulting order we want, we need to sort by the LEAST important attribute first!
@@ -279,14 +279,14 @@ def sort_stories(stories):
     # Sort stories by size in descending order
     stories.sort(key=attrgetter('size'), reverse=True)
 
-    # Sort resulting stories by deadline in ascending order
-    stories.sort(key=attrgetter('deadline'))
+    # Sort resulting stories by end_date in ascending order
+    stories.sort(key=attrgetter('end_date'))
     
     # Sort resulting stories by priority in descending order
     stories.sort(key=attrgetter('priority'), reverse=True)
 
 
-#! DEBUG: Test this with a sprint that can take in a story, but the story's deadline is already passed -- should not be slotted in!
+#! DEBUG: Test this with a sprint that can take in a story, but the story's end_date is already passed -- should not be slotted in!
 
 # Slot stories into sprints, following the order of the 'stories' list (if story A appears before story B in the 'stories' list, then A will be slotted into a sprint before B) and the 'sprints' list (if sprint 1 appears before sprint 2 in the 'sprints' list, then we will attempt to slot stories into sprint 1 before sprint 2)
 # Note that, depending on how much space is left in each sprint, even though we try to slot story A into one of the sprints before trying to slot story B, if B is smaller than A, B might end up in an earlier sprint than A (i.e. if that sprint didn't have enough space for A, forcing A to go to the next sprint, but had enough space for B).
@@ -308,7 +308,7 @@ def slot_stories(stories, sprints):
         # Try to slot the story into the first sprint that has enough space for it
         for sprint in available_sprints:
 
-            if (sprint.available_capacity >= story_size) and (sprint.start_date <= story.deadline):
+            if (sprint.available_capacity >= story_size) and (sprint.start_date <= story.end_date):
                 sprint.stories.append(story)
                 sprint.available_capacity -= story_size
                 stories.remove(story)
