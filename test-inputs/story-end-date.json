@@ -1,0 +1,18 @@
+{
+    "sprints":
+    [
+        {
+            "start_date": "2019-01-13",
+            "end_date": "2019-01-20",
+            "capacity": 5
+        }
+    ],
+    "stories":
+    [
+        {
+            "id": "A",
+            "size": 3,
+            "end_date": "2019-01-12"
+        }
+    ]
+}

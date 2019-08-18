@@ -299,8 +299,6 @@ def sort_stories(stories):
     stories.sort(key=attrgetter('priority'), reverse=True)
 
 
-#! DEBUG: Test this with a sprint that can take in a story, but the story's end_date is already passed -- should not be slotted in!
-
 # Slot stories into sprints, following the order of the 'stories' list (if story A appears before story B in the 'stories' list, then A will be slotted into a sprint before B) and the 'sprints' list (if sprint 1 appears before sprint 2 in the 'sprints' list, then we will attempt to slot stories into sprint 1 before sprint 2)
 # Note that, depending on how much space is left in each sprint, even though we try to slot story A into one of the sprints before trying to slot story B, if B is smaller than A, B might end up in an earlier sprint than A (i.e. if that sprint didn't have enough space for A, forcing A to go to the next sprint, but had enough space for B).
 def slot_stories(stories, sprints):
