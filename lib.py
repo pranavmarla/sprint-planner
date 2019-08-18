@@ -103,16 +103,19 @@ def parse_command_line_args():
     arg_parser.add_argument('--input', default='')
 
     args = arg_parser.parse_args()
-    
+
     # For safety, remove any extraneous whitespace
     return \
         (
             args.input.strip()
         )
 
-
 # input_file_path is a string containing the file path of the input file
 def load_input_data(input_file_path):
+
+    # No input file path argument was provided, or a blank string was provided
+    if not input_file_path:
+        raise ValueError('No input file path provided!')
 
     with open(input_file_path) as input_file:
         input_dict = json.load(input_file)
