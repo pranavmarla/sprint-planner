@@ -298,51 +298,57 @@ def sort_stories(stories):
 # Note that, depending on how much space is left in each sprint, even though we try to slot story A into one of the sprints before trying to slot story B, if B is smaller than A, B might end up in an earlier sprint than A (i.e. if that sprint didn't have enough space for A, forcing A to go to the next sprint, but had enough space for B).
 def slot_stories(stories, sprints):
 
+    # The 'stories' and 'sprints' lists might be used even after this function is done -- thus, do NOT directly modify them!
+
+    # Contains stories that we have not yet attempted to slot
+    available_stories = stories.copy()
+
     # Contains sprints that have available capacity
     available_sprints = sprints.copy()
 
-    # Contains sprints that have no available capacity.
+    # Contains sprints that have no available capacity left.
     full_sprints = []
 
-    # Contains all the stories that could not be slotted into any sprints
+    # Contains all the stories that we were not able to slot into any sprints
     remaining_stories = []
 
-    for story in stories.copy():
+    # Since we will be modifying available_stories in this 'for' loop, do NOT iterate over available_stories itself!
+    for story in stories:
 
         story_size = story.size
 
-        # Try to slot the story into the first sprint that has enough space for it
+        # Try to slot the story into the first sprint that has enough space for it, and that abides by its start and end date constraints
         for sprint in available_sprints:
 
             if (sprint.available_capacity >= story_size) and (sprint.end_date >= story.start_date) and (sprint.start_date <= story.end_date):
                 sprint.stories.append(story)
                 sprint.available_capacity -= story_size
-                stories.remove(story)
+                available_stories.remove(story)
                 break
             
             elif sprint.available_capacity == 0:
                 full_sprints.append(sprint)
         
-        # If we know any of the sprints are full, remove it from the 'sprints' list so that we don't waste time trying to slot the next story into it
+        # If we know any of the sprints are full, remove it from the 'available_sprints' list so that we don't waste time trying to slot the next story into it
         for full_sprint in full_sprints:
             available_sprints.remove(full_sprint)
         
-        # If all the sprints are full, don't bother trying to slot the remaining stories
-        if not available_sprints:
-            overflow_stories = stories
-            break
-
-        # Now that we've removed all the full sprints from 'sprints', reset 'full_sprints'
+        # Now that we've removed all the full sprints from 'available_sprints', reset 'full_sprints'
         if full_sprints:
             full_sprints.clear()
-    
+
+        # If all the sprints are full, don't bother trying to slot the remaining stories
+        if not available_sprints:
+            remaining_stories = available_stories
+            break
+
     # Enter this 'else' clause if we did NOT exit the above 'for' loop by breaking out of it.
     else:
 
-        # It is possible to have stories remaining (unslotted) without having already placed them in overflow_stories:
+        # It is possible to have stories remaining (unslotted) without having already placed them in remaining_stories:
         # a) If there is not enough space in the remaining sprints to slot in the remaining stories, but the remaining sprints are NOT full!
-        # b) If the last sprint was perfectly filled when the last story in the 'stories' list was slotted in -- note that there are still other unslotted stories in the 'stories' list, but there wasn't enough space to slot them in, so they were skipped over before we got to this last story.
-        if stories:
-            overflow_stories = stories
+        # b) If the last sprint was perfectly filled when the final story in the 'stories' list was slotted in -- note that there are still other unslotted stories in the 'stories' list, but there wasn't enough space to slot them in, so they were skipped over before we got to this final story.
+        if available_stories:
+            remaining_stories = available_stories
     
-    return overflow_stories
+    return remaining_stories
