@@ -53,16 +53,18 @@ class Sprint:
 
 class Story:
 
-    def __init__(self, id, name=None, size=1, priority=0, end_date=MAX_DATE, children_ids=None):
+    def __init__(self, id, name=None, size=1, priority=0, start_date=None, end_date=MAX_DATE, children_ids=None):
 
         self.id = id
         self.name = name
 
         # Size accepts all non-negative values, including 0 and floating point numbers.
         self.size = size
+        
         # Priority accepts all values, including negative numbers, 0 and floating point numbers.
         self.priority = priority
 
+        self.start_date = start_date
         self.end_date = end_date
 
         # If story B depends on story A, A is a parent of B, and B is a child of A.
@@ -90,7 +92,7 @@ class Story:
             self.is_normalized = False
 
     def __repr__(self):
-        return 'Story(id={}, name={}, size={}, priority={}, end_date={}, children_ids={}, children={}, is_normalized={})'.format(self.id, self.name, self.size, self.priority, self.end_date, self.children_ids, self.children, self.is_normalized)
+        return 'Story(id={}, name={}, size={}, priority={}, start_date={}, end_date={}, children_ids={}, children={}, is_normalized={})'.format(self.id, self.name, self.size, self.priority, self.start_date, self.end_date, self.children_ids, self.children, self.is_normalized)
 
 
 def parse_command_line_args():
