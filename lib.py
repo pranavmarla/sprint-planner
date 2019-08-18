@@ -95,12 +95,12 @@ class Story:
 
 def parse_command_line_args():
 
-    arg_parser = argparse.ArgumentParser()
-    
-    # For ease of maintenance, make all arguments optional
     # Note: If any of the arguments are not supplied, their value with either be None or whatever alternate default value we specify below.
     # To make it easy to clean up the arguments, ensure their default values are valid strings.
-    arg_parser.add_argument('--input', default='')
+    arg_parser = argparse.ArgumentParser(argument_default='')
+    
+    # For ease of maintenance, make all arguments optional
+    arg_parser.add_argument('--input')
 
     args = arg_parser.parse_args()
 
