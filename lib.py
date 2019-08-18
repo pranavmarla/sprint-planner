@@ -10,6 +10,9 @@ from operator import attrgetter
 # NOTE: date.resolution is the smallest possible difference between non-equal date objects (i.e. 1 day).
 ONE_DAY = date.resolution
 
+# Min possible date (Jan 01, 0001)
+MIN_DATE = date.min
+
 # Max possible date (Dec 31, 9999)
 MAX_DATE = date.max
 
@@ -53,7 +56,7 @@ class Sprint:
 
 class Story:
 
-    def __init__(self, id, name=None, size=1, priority=0, start_date=None, end_date=MAX_DATE, children_ids=None):
+    def __init__(self, id, name=None, size=1, priority=0, start_date=MIN_DATE, end_date=MAX_DATE, children_ids=None):
 
         self.id = id
         self.name = name
