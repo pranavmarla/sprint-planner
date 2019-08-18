@@ -231,12 +231,12 @@ def normalize_story(story, children_values_dict, one_day=ONE_DAY):
     # Note: When the story was created, if it had no children, we made sure to mark it as normalized right then -- so, at this point, if the story is not already normalized, we know it has children.
     children = story.children
 
-    # Sort its list of children by their IDs, to ensure consistency when multiple parents query this same group of children.
+    # Sort its list of children by their IDs, to ensure consistency if multiple parents query this same group of children.
     children.sort(key=attrgetter('id'))
 
     # See if the max priority and min end_date have already been calculated for this particular group of children.
 
-    # If they have, then they will be stored in children_values_dict with a key formed from the IDs of the sorted list of children.
+    # If they have, then they will already be present in children_values_dict with a key formed from the IDs of the sorted list of children.
     key = tuple([child.id for child in children])
     if key in children_values_dict:
         max_priority, min_end_date = children_values_dict[key]
