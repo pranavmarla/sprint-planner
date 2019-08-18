@@ -224,7 +224,6 @@ def normalize_stories(stories):
 
 
 # NOTE: This can potentially take exponential running time if every parent has a unique set of children but we assume that, in practice, this situation will never arise.
-#! b) This can still potentially take exponential running time if every parent has a unique set of children.
 # Recursive helper function for normalize_stories()
 def normalize_story(story, children_values_dict, one_day=ONE_DAY):
 
