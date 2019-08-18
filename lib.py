@@ -190,6 +190,9 @@ def load_story_data(input_dict, default_end_date=MAX_DATE):
         if 'priority' in story_dict:
             story_constructor_args_dict['priority'] = story_dict['priority']
         
+        if 'start_date' in story_dict:
+            story_constructor_args_dict['start_date'] = convert_str_to_date(story_dict['start_date'])
+
         if 'end_date' in story_dict:
             story_constructor_args_dict['end_date'] = convert_str_to_date(story_dict['end_date'])
         
