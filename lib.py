@@ -239,7 +239,7 @@ def normalize_story(story, children_values_dict, one_day=ONE_DAY):
     # If they have, then they will be stored in children_values_dict with a key formed from the IDs of the sorted list of children.
     key = tuple([child.id for child in children])
     if key in children_values_dict:
-        max_priority, min_deadline = children_values_dict[key]
+        max_priority, min_end_date = children_values_dict[key]
     
     # The max priority and min end_date have not already been calculated for this particular group of children.
     else:
