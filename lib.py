@@ -140,7 +140,11 @@ def load_sprint_data(input_dict):
 
         # Dictionary containing the arguments to be provided when creating a new Sprint object.
         # Initialize it with the mandatory arguments.
-        sprint_constructor_args_dict = {'start_date': convert_str_to_date(sprint_dict['start_date']), 'end_date': convert_str_to_date(sprint_dict['end_date']), 'total_capacity': sprint_dict['capacity']}
+        sprint_constructor_args_dict = \
+            {
+                'start_date': convert_str_to_date(sprint_dict['start_date']), 
+                'end_date': convert_str_to_date(sprint_dict['end_date']), 'total_capacity': sprint_dict['capacity']
+            }
 
         # If the optional arguments are present, add them as well
         if 'name' in sprint_dict:
