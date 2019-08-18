@@ -149,7 +149,7 @@ def load_sprint_data(input_dict):
         # Now that we've assembled all the arguments, use them to create a new Sprint object and add it to the list of Sprint objects
         sprints.append(Sprint(**sprint_constructor_args_dict))
     
-    # To be safe, sort sprints by their end date
+    # To be safe, sort sprints by their end date (in ascending order)
     sprints.sort(key=attrgetter('end_date'))
 
     return sprints
