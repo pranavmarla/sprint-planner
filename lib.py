@@ -302,7 +302,7 @@ def slot_stories(stories, sprints):
     full_sprints = []
 
     # Contains all the stories that could not be slotted into any sprints
-    overflow_stories = []
+    remaining_stories = []
 
     for story in stories.copy():
 

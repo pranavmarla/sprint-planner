@@ -45,7 +45,7 @@ lib.sort_stories(stories)
 
 
 # Slot stories
-overflow_stories = lib.slot_stories(stories, sprints)
+remaining_stories = lib.slot_stories(stories, sprints)
 
 
 
@@ -62,9 +62,9 @@ for sprint in sprints:
     print('-------------\n')
 print()
 
-if overflow_stories:
+if remaining_stories:
     print('The following stories could not be slotted into any sprint:')
-    for story in overflow_stories:
+    for story in remaining_stories:
         print('\t{}'.format(story.id), end='')
         if story.name:
             print(': {}'.format(story.name))
