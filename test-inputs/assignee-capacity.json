@@ -1,0 +1,32 @@
+{
+    "sprints":
+    [
+        {
+            "start_date": "2019-01-01",
+            "end_date": "2019-01-13",
+            "capacity": 10,
+            "assignee_available_capacities":
+            {
+                "Pranav": 6
+            }
+        }
+    ],
+    "stories":
+    [
+        {
+            "id": "A",
+            "size": 3,
+            "assignee": "Pranav"
+        },
+        {
+            "id": "B",
+            "size": 3,
+            "assignee": "Pranav"
+        },
+        {
+            "id": "C",
+            "size": 3,
+            "assignee": "Pranav"
+        }
+    ]
+}

@@ -36,7 +36,7 @@ class Sprint:
 
     SPRINT_ID_GENERATOR = consecutive_number_generator_function()
 
-    def __init__(self, start_date, end_date, total_capacity, name=None):
+    def __init__(self, start_date, end_date, total_capacity, assignee_available_capacities=None, name=None):
         
         self.id = next(self.SPRINT_ID_GENERATOR)
         self.name = name
@@ -47,16 +47,21 @@ class Sprint:
         # Accepts all non-negative values, including 0 and floating point numbers.
         self.total_capacity = total_capacity
         self.available_capacity = self.total_capacity
+
+        # Dictionary mapping name of assignee (person doing the work) to the remaining number of story points they can do in this sprint
+        if assignee_available_capacities is None:
+            assignee_available_capacities = {}
+        self.assignee_available_capacities = assignee_available_capacities
         
         self.stories = []
 
     def __repr__(self):
-        return 'Sprint(id={}, name={}, start_date={}, end_date={}, total_capacity={}, available_capacity={}, stories={})'.format(self.id, self.name, self.start_date, self.end_date, self.total_capacity, self.available_capacity, self.stories)
+        return 'Sprint(id={}, name={}, start_date={}, end_date={}, total_capacity={}, available_capacity={}, assignee_available_capacities={}, stories={})'.format(self.id, self.name, self.start_date, self.end_date, self.total_capacity, self.available_capacity, self.assignee_available_capacities, self.stories)
 
 
 class Story:
 
-    def __init__(self, id, name=None, size=1, priority=0, start_date=MIN_DATE, end_date=MAX_DATE, children_ids=None):
+    def __init__(self, id, name=None, size=1, priority=0, start_date=MIN_DATE, end_date=MAX_DATE, assignee=None, children_ids=None):
 
         self.id = id
         self.name = name
@@ -69,6 +74,9 @@ class Story:
 
         self.start_date = start_date
         self.end_date = end_date
+
+        # The name of the person who is doing this story
+        self.assignee = assignee
 
         # If story B depends on story A, A is a parent of B, and B is a child of A.
         
@@ -95,7 +103,7 @@ class Story:
             self.is_normalized = False
 
     def __repr__(self):
-        return 'Story(id={}, name={}, size={}, priority={}, start_date={}, end_date={}, children_ids={}, children={}, is_normalized={})'.format(self.id, self.name, self.size, self.priority, self.start_date, self.end_date, self.children_ids, self.children, self.is_normalized)
+        return 'Story(id={}, name={}, size={}, priority={}, start_date={}, end_date={}, assignee={}, children_ids={}, children={}, is_normalized={})'.format(self.id, self.name, self.size, self.priority, self.start_date, self.end_date, self.assignee, self.children_ids, self.children, self.is_normalized)
 
 
 def parse_command_line_args():
@@ -147,8 +155,12 @@ def load_sprint_data(input_dict):
             }
 
         # If the optional arguments are present, add them as well
+
         if 'name' in sprint_dict:
             sprint_constructor_args_dict['name'] = sprint_dict['name']
+        
+        if 'assignee_available_capacities' in sprint_dict:
+            sprint_constructor_args_dict['assignee_available_capacities'] = sprint_dict['assignee_available_capacities']
 
         # Now that we've assembled all the arguments, use them to create a new Sprint object and add it to the list of Sprint objects
         sprints.append(Sprint(**sprint_constructor_args_dict))
@@ -195,6 +207,9 @@ def load_story_data(input_dict, default_end_date=MAX_DATE):
 
         if 'end_date' in story_dict:
             story_constructor_args_dict['end_date'] = convert_str_to_date(story_dict['end_date'])
+        
+        if 'assignee' in story_dict:
+            story_constructor_args_dict['assignee'] = story_dict['assignee']
         
         if 'prerequisite_for' in story_dict:
             story_constructor_args_dict['children_ids'] = story_dict['prerequisite_for']
@@ -328,6 +343,18 @@ def slot_stories(stories, sprints):
             if (sprint.available_capacity >= story_size) \
                 and (sprint.end_date >= story.start_date) \
                 and (sprint.start_date <= story.end_date):
+
+                # If the story is already assigned to someone, only slot it in this sprint if that person has enough available capacity in this sprint
+                # Note that assignee can be None, but assignee_available_capacities will always be a valid dict.
+                assignee = story.assignee
+                assignee_available_capacities = sprint.assignee_available_capacities
+                if assignee in assignee_available_capacities:
+                    if assignee_available_capacities[assignee] >= story_size:
+                        assignee_available_capacities[assignee] -= story_size
+                    else:
+                        # Do not slot this story in this sprint, because the assignee does not have enough capacity to do it in this sprint
+                        continue
+
                 sprint.stories.append(story)
                 sprint.available_capacity -= story_size
                 available_stories.remove(story)
