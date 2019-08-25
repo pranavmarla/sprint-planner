@@ -322,9 +322,9 @@ def slot_stories(stories, sprints):
 
         story_size = story.size
 
-        # Try to slot the story into the first sprint that has enough space for it, and that abides by its start and end date constraints
         for sprint in available_sprints:
 
+            # Try to slot the story into the first sprint that has enough space for it, and that abides by its start and end date constraints
             if (sprint.available_capacity >= story_size) \
                 and (sprint.end_date >= story.start_date) \
                 and (sprint.start_date <= story.end_date):
