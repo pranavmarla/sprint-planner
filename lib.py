@@ -52,6 +52,8 @@ class Sprint:
         if assignee_total_capacities is None:
             assignee_total_capacities = {}
         self.assignee_total_capacities = assignee_total_capacities
+
+        # Dictionary mapping name of assignee (person doing the work) to the remaining number of story points they can do in this sprint.
         # Note that although this is a shallow copy, since the values here are simple numbers (not objects like lists), it doesn't matter -- changes made to the values in one dict do not affect the corresponding values in the other dict.
         self.assignee_available_capacities = self.assignee_total_capacities.copy()
         
