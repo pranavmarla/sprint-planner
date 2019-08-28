@@ -67,6 +67,8 @@ class Story:
         self.name = name
 
         # Size accepts all non-negative values, including 0 and floating point numbers.
+        if size < 0:
+            raise ValueError("Story {} has a size of {}: Story sizes have to be >= 0!".format(id, size))
         self.size = size
         
         # Priority accepts all values, including negative numbers, 0 and floating point numbers.
