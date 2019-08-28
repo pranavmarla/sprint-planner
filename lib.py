@@ -36,7 +36,7 @@ class Sprint:
 
     SPRINT_ID_GENERATOR = consecutive_number_generator_function()
 
-    def __init__(self, start_date, end_date, total_capacity, assignee_available_capacities=None, name=None):
+    def __init__(self, start_date, end_date, total_capacity, assignee_total_capacities=None, name=None):
         
         self.id = next(self.SPRINT_ID_GENERATOR)
         self.name = name
@@ -48,15 +48,17 @@ class Sprint:
         self.total_capacity = total_capacity
         self.available_capacity = self.total_capacity
 
-        # Dictionary mapping name of assignee (person doing the work) to the remaining number of story points they can do in this sprint
-        if assignee_available_capacities is None:
-            assignee_available_capacities = {}
-        self.assignee_available_capacities = assignee_available_capacities
+        # Dictionary mapping name of assignee (person doing the work) to the max number of story points they can do in this sprint
+        if assignee_total_capacities is None:
+            assignee_total_capacities = {}
+        self.assignee_total_capacities = assignee_total_capacities
+        # Note that although this is a shallow copy, since the values here are simple numbers (not objects like lists), it doesn't matter -- changes made to the values in one dict do not affect the corresponding values in the other dict.
+        self.assignee_available_capacities = self.assignee_total_capacities.copy()
         
         self.stories = []
 
     def __repr__(self):
-        return 'Sprint(id={}, name={}, start_date={}, end_date={}, total_capacity={}, available_capacity={}, assignee_available_capacities={}, stories={})'.format(self.id, self.name, self.start_date, self.end_date, self.total_capacity, self.available_capacity, self.assignee_available_capacities, self.stories)
+        return 'Sprint(id={}, name={}, start_date={}, end_date={}, total_capacity={}, available_capacity={}, assignee_total_capacities={}, assignee_available_capacities={}, stories={})'.format(self.id, self.name, self.start_date, self.end_date, self.total_capacity, self.available_capacity, self.assignee_total_capacities, self.assignee_available_capacities, self.stories)
 
 
 class Story:
@@ -162,7 +164,7 @@ def load_sprint_data(input_dict):
             sprint_constructor_args_dict['name'] = sprint_dict['name']
         
         if 'assignee_capacities' in sprint_dict:
-            sprint_constructor_args_dict['assignee_available_capacities'] = sprint_dict['assignee_capacities']
+            sprint_constructor_args_dict['assignee_total_capacities'] = sprint_dict['assignee_capacities']
 
         # Now that we've assembled all the arguments, use them to create a new Sprint object and add it to the list of Sprint objects
         sprints.append(Sprint(**sprint_constructor_args_dict))
