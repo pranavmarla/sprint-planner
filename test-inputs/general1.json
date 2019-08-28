@@ -16,17 +16,17 @@
     [
         {
             "id": "M",
-            "priority": -1
+            "importance": -1
         },
         {
             "id": "L",
             "size": 3,
-            "priority": 1
+            "importance": 1
         },
         {
             "id": "K",
             "size": 5,
-            "priority": -1
+            "importance": -1
         },
         {
             "id": "J",
@@ -35,12 +35,12 @@
         {
             "id": "I",
             "size": 2,
-            "priority": -1
+            "importance": -1
         },
         {
             "id": "H",
             "size": 3,
-            "priority": 1
+            "importance": 1
         },
         {
             "id": "G",
@@ -67,7 +67,7 @@
         {
             "id": "D",
             "size": 5,
-            "priority": 1,
+            "importance": 1,
             "end_date": "2019-01-26"
         },
         {
@@ -89,7 +89,7 @@
         {
             "id": "A",
             "size": 5,
-            "priority": 1
+            "importance": 1
         }
     ]
 }

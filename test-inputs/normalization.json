@@ -29,7 +29,7 @@
         },
         {
             "id": "E",
-            "priority": 1,
+            "importance": 1,
             "end_date": "2019-01-10"
         },
         {
@@ -37,12 +37,12 @@
         },
         {
             "id": "G",
-            "priority": -1,
+            "importance": -1,
             "end_date": "2019-01-09"
         },
         {
             "id": "C",
-            "priority": -1,
+            "importance": -1,
             "end_date": "2019-01-08"
         },
         {
@@ -57,17 +57,17 @@
         },
         {
             "id": "H",
-            "priority": -1,
+            "importance": -1,
             "end_date": "2019-01-13"
         },
         {
             "id": "I",
-            "priority": -1,
+            "importance": -1,
             "end_date": "2019-01-12"
         },
         {
             "id": "J",
-            "priority": -1
+            "importance": -1
         }
     ]
 }
