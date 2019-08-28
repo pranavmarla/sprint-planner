@@ -159,8 +159,8 @@ def load_sprint_data(input_dict):
         if 'name' in sprint_dict:
             sprint_constructor_args_dict['name'] = sprint_dict['name']
         
-        if 'assignee_available_capacities' in sprint_dict:
-            sprint_constructor_args_dict['assignee_available_capacities'] = sprint_dict['assignee_available_capacities']
+        if 'assignee_capacities' in sprint_dict:
+            sprint_constructor_args_dict['assignee_available_capacities'] = sprint_dict['assignee_capacities']
 
         # Now that we've assembled all the arguments, use them to create a new Sprint object and add it to the list of Sprint objects
         sprints.append(Sprint(**sprint_constructor_args_dict))

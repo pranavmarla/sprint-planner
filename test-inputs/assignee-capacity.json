@@ -5,7 +5,7 @@
             "start_date": "2019-01-01",
             "end_date": "2019-01-13",
             "capacity": 10,
-            "assignee_available_capacities":
+            "assignee_capacities":
             {
                 "Pranav": 6
             }
