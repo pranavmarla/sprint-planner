@@ -53,20 +53,25 @@ print('Sprints, after slotting in stories:')
 for sprint in sprints:
     print('-------------')
     print('Sprint {}:\tCapacity remaining: {}/{}\n'.format(sprint.id, sprint.available_capacity, sprint.total_capacity))
+    
     for story in sprint.stories:
         print(story)
-    
     print()
 
-            print()
+    if sprint.assignee_total_capacities:
+        print('\t-------------\n')
+        print('\tAssignees:')
+        for assignee, assignee_remaining_capacity in sprint.assignee_available_capacities.items():
+            print('\t\t{}: {}/{} remaining'.format(assignee, assignee_remaining_capacity, sprint.assignee_total_capacities[assignee]))
+        print()
+
     print('-------------\n')
-print()
 
 if remaining_stories:
     print('The following stories could not be slotted into any sprint:')
     for story in remaining_stories:
         print(story)
 else:
-            print()
-else:
     print('All stories were successfully slotted into sprints!')
+
+print()
