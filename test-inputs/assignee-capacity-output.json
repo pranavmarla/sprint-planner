@@ -1,0 +1,14 @@
+{
+    "1": {
+        "Stories": [
+            "A",
+            "B"
+        ],
+        "Assignee Workload": {
+            "Pranav": 6
+        }
+    },
+    "Remaining": [
+        "C"
+    ]
+}

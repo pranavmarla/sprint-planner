@@ -1,0 +1,27 @@
+{
+    "1": {
+        "Stories": [
+            "B",
+            "C",
+            "D",
+            "E",
+            "I"
+        ],
+        "Assignee Workload": {}
+    },
+    "2": {
+        "Stories": [
+            "F",
+            "A",
+            "L",
+            "M"
+        ],
+        "Assignee Workload": {}
+    },
+    "Remaining": [
+        "H",
+        "J",
+        "G",
+        "K"
+    ]
+}
