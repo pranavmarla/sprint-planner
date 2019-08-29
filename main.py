@@ -3,7 +3,9 @@
 __author__ = 'Pranav Marla'
 
 
+from collections import OrderedDict
 from datetime import date, datetime
+import json
 import lib
 
 
@@ -74,3 +76,21 @@ else:
     print('All stories were successfully slotted into sprints!')
 
 print()
+
+# Create a more compact, consistent representation of the results, for easy comparison, and save to output JSON file.
+# Ensure that, given the same input, the same output is consistently generated!
+output_dict = OrderedDict()
+for sprint in sprints:
+
+    sprint_dict = output_dict[sprint.id] = OrderedDict()
+    sprint_dict['Stories'] = [story.id for story in sprint.stories]
+
+    sprint_assignees_dict = sprint_dict['Assignee Workload'] = OrderedDict()
+    for assignee, assignee_remaining_capacity in sprint.assignee_available_capacities.items():
+            assignee_total_capacity = sprint.assignee_total_capacities[assignee]
+            sprint_assignees_dict[assignee] = sprint.assignee_total_capacities[assignee] - assignee_remaining_capacity
+
+output_dict['Remaining'] = [story.id for story in remaining_stories]
+
+with open('output.json', 'w') as output_file:
+    output_file.write(json.dumps(output_dict, indent=4))
