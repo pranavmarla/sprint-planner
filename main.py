@@ -60,9 +60,10 @@ for sprint in sprints:
 
     if sprint.assignee_total_capacities:
         print('\t-------------\n')
-        print('\tAssignees:')
+        print('\tAssignee Workload:')
         for assignee, assignee_remaining_capacity in sprint.assignee_available_capacities.items():
-            print('\t\t{}: {}/{} remaining'.format(assignee, assignee_remaining_capacity, sprint.assignee_total_capacities[assignee]))
+            assignee_total_capacity = sprint.assignee_total_capacities[assignee]
+            print('\t\t{}: {}/{}'.format(assignee, assignee_total_capacity - assignee_remaining_capacity, assignee_total_capacity))
         print()
 
     print('-------------\n')
