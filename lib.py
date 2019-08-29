@@ -112,12 +112,20 @@ class Story:
         return 'Story(id={}, name={}, size={}, importance={}, start_date={}, end_date={}, assignee={}, children_ids={}, children={}, is_normalized={})'.format(self.id, self.name, self.size, self.importance, self.start_date, self.end_date, self.assignee, self.children_ids, self.children, self.is_normalized)
     
     def __str__(self):
-        story_description_components = ['\t{}'.format(self.id)]
+        
+        story_description_components = []
+        
         if self.name:
-            story_description_components.append(': {}'.format(self.name))
+            story_name = '\t{}: {}'.format(self.id, self.name)
+        else:
+            story_name = '\t{}'.format(self.id)
+        story_description_components.append(story_name)
+
         if self.assignee:
             story_description_components.append(self.assignee)
+        
         story_description_components.append(str(self.size))
+
         return'\t'.join(story_description_components)
 
 
