@@ -47,8 +47,6 @@ lib.sort_stories(stories)
 # Slot stories
 remaining_stories = lib.slot_stories(stories, sprints)
 
-
-
 print('Sprints, after slotting in stories:')
 for sprint in sprints:
     print('-------------')
