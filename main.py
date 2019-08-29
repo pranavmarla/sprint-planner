@@ -54,10 +54,10 @@ for sprint in sprints:
     print('-------------')
     print('Sprint {}:\tCapacity remaining: {}/{}\n'.format(sprint.id, sprint.available_capacity, sprint.total_capacity))
     for story in sprint.stories:
-        print('\t{}'.format(story.id), end='')
-        if story.name:
-            print(': {}'.format(story.name))
-        else:
+        print(story)
+    
+    print()
+
             print()
     print('-------------\n')
 print()
@@ -65,10 +65,8 @@ print()
 if remaining_stories:
     print('The following stories could not be slotted into any sprint:')
     for story in remaining_stories:
-        print('\t{}'.format(story.id), end='')
-        if story.name:
-            print(': {}'.format(story.name))
-        else:
+        print(story)
+else:
             print()
 else:
     print('All stories were successfully slotted into sprints!')
