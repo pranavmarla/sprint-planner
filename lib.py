@@ -113,18 +113,15 @@ class Story:
     
     def __str__(self):
         
-        story_description_components = []
+        # Want the mandatory components of each story's description to be printed first so that it lines up nicely with the other stories' descriptions and is easy to compare, whether or not every story has any of the optional components.
+        story_description_components = ['\t{}'.format(self.id), str(self.size)]
         
-        if self.name:
-            story_name = '\t{}: {}'.format(self.id, self.name)
-        else:
-            story_name = '\t{}'.format(self.id)
-        story_description_components.append(story_name)
-
         if self.assignee:
             story_description_components.append(self.assignee)
         
-        story_description_components.append(str(self.size))
+        # Print the name last, as its length will probably vary the most
+        if self.name:
+            story_description_components.append(self.name)
 
         return'\t'.join(story_description_components)
 
