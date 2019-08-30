@@ -120,7 +120,10 @@ class Story:
         story_description_components = ['\t{}'.format(self.id), str(self.size)]
         
         if self.assignee:
-            story_description_components.append(self.assignee)
+            assignee = self.assignee
+        else:
+            assignee = ''
+        story_description_components.append(assignee)
         
         # Print the name last, as its length will probably vary the most
         if self.name:
