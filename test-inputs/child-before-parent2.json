@@ -1,0 +1,36 @@
+{
+    "sprints":
+    [
+        {
+            "start_date": "2019-01-13",
+            "end_date": "2019-01-20",
+            "capacity": 3
+        },
+        {
+            "start_date": "2019-01-21",
+            "end_date": "2019-01-28",
+            "capacity": 5
+        },
+        {
+            "start_date": "2019-01-29",
+            "end_date": "2019-02-03",
+            "capacity": 5
+        }
+    ],
+    "stories":
+    [
+        {
+            "id": "A",
+            "name": "Should not end up after child B",
+            "size": 5,
+            "prerequisite_for":
+            [
+                "B"
+            ]
+        },
+        {
+            "id": "B",
+            "size": 3
+        }
+    ]
+}

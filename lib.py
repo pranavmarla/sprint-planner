@@ -107,9 +107,12 @@ class Story:
             self.is_normalized = True
         else:
             self.is_normalized = False
+        
+        # The sprint that this story has been slotted into
+        self.assigned_sprint = None
 
     def __repr__(self):
-        return 'Story(id={}, name={}, size={}, importance={}, start_date={}, end_date={}, assignee={}, children_ids={}, children={}, is_normalized={})'.format(self.id, self.name, self.size, self.importance, self.start_date, self.end_date, self.assignee, self.children_ids, self.children, self.is_normalized)
+        return 'Story(id={}, name={}, size={}, importance={}, start_date={}, end_date={}, assignee={}, children_ids={}, children={}, is_normalized={}, assigned_sprint={})'.format(self.id, self.name, self.size, self.importance, self.start_date, self.end_date, self.assignee, self.children_ids, self.children, self.is_normalized, self.assigned_sprint)
     
     def __str__(self):
         
@@ -336,7 +339,8 @@ def sort_stories(stories):
 
 # Slot stories into sprints, following the order of the 'stories' list (if story A appears before story B in the 'stories' list, then A will be slotted into a sprint before B) and the 'sprints' list (if sprint 1 appears before sprint 2 in the 'sprints' list, then we will attempt to slot stories into sprint 1 before sprint 2)
 # Note that, depending on how much space is left in each sprint, even though we try to slot story A into one of the sprints before trying to slot story B, if B is smaller than A, B might end up in an earlier sprint than A (i.e. if that sprint didn't have enough space for A, forcing A to go to the next sprint, but had enough space for B).
-def slot_stories(stories, sprints):
+# Thus, even though we have ensured (via normalization and sorting) that, if A is the parent of B, A appears before B in the sorted list of stories, that alone is NOT enough to guarantee that, after slotting the stories, B will not end up in an earler sprint than its parent A! Instead, as seen below, we might need to modify B's start date as well.
+def slot_stories(stories, sprints, max_date=MAX_DATE):
 
     # The 'stories' and 'sprints' lists might be used even after this function is done -- thus, do NOT directly modify them!
 
@@ -375,9 +379,11 @@ def slot_stories(stories, sprints):
                         # Do not slot this story in this sprint, because the assignee does not have enough capacity to do it in this sprint
                         continue
 
+                # Slot story into sprint
                 sprint.stories.append(story)
                 sprint.available_capacity -= story_size
                 available_stories.remove(story)
+                story.assigned_sprint = sprint
                 break
             
             elif sprint.available_capacity == 0:
@@ -395,6 +401,22 @@ def slot_stories(stories, sprints):
         if not available_sprints:
             remaining_stories = available_stories
             break
+
+        # Thanks to normalization and story sorting, we know that, if this story has children, we have not yet attempted to slot them into a sprint yet. 
+        # If any of this story's children is smaller than this story, it might accidentally ending up slotted into a sprint before this story -- i.e. the sprint schedule calls for the child to be done before the parent! 
+        # To avoid this, we modify each child's start date below.
+        for child in story.children:
+
+            # If this story was assigned to a sprint, ensure that all the children's start dates are no earlier than the start of that sprint. This ensures that the children cannot be assigned to a sprint prior to the sprint that their parent was assigned to.
+            if story.assigned_sprint:
+                earliest_start_date_for_children = story.assigned_sprint.start_date
+            
+            # If this story was not assigned to any sprint, its children cannot be allowed to be assigned to any sprint either! The easiest way to achieve this is to set their start dates to a date guaranteed to be after the last sprint's end date.
+            else:
+                earliest_start_date_for_children = max_date
+
+            if child.start_date < earliest_start_date_for_children:
+                child.start_date = earliest_start_date_for_children
 
     # Enter this 'else' clause if we did NOT exit the above 'for' loop by breaking out of it.
     else:
