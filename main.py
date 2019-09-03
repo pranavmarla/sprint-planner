@@ -11,7 +11,7 @@ import lib
 
 input_file_path = lib.parse_command_line_args()
 
-sprints, stories, id_to_story_dict = lib.load_input_data(input_file_path)
+sprints, id_to_sprint_dict, stories, id_to_story_dict = lib.load_input_data(input_file_path)
 
 # Populate list of children
 lib.populate_children_from_ids(stories, id_to_story_dict)
@@ -48,7 +48,7 @@ lib.sort_stories(stories)
 
 
 # Slot stories
-remaining_stories = lib.slot_stories(stories, sprints)
+remaining_stories = lib.slot_stories(stories, sprints, id_to_sprint_dict)
 
 print('Sprints, after slotting in stories:')
 for sprint in sprints:

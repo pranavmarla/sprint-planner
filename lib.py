@@ -108,11 +108,12 @@ class Story:
         else:
             self.is_normalized = False
         
-        # The sprint that this story has been slotted into
-        self.assigned_sprint = None
+        # Note: Each sprint already links to their stories -- don't have the stories link back to their assigned sprint as well, since that will cause an "infinite" recursion when printing a story/sprint` (Python will automatically stop printing it after a while, but it will still be a lot of output).
+        # The ID of the sprint that this story has been slotted into
+        self.assigned_sprint_id = None
 
     def __repr__(self):
-        return 'Story(id={}, name={}, size={}, importance={}, start_date={}, end_date={}, assignee={}, children_ids={}, children={}, is_normalized={}, assigned_sprint={})'.format(self.id, self.name, self.size, self.importance, self.start_date, self.end_date, self.assignee, self.children_ids, self.children, self.is_normalized, self.assigned_sprint)
+        return 'Story(id={}, name={}, size={}, importance={}, start_date={}, end_date={}, assignee={}, children_ids={}, children={}, is_normalized={}, assigned_sprint_id={})'.format(self.id, self.name, self.size, self.importance, self.start_date, self.end_date, self.assignee, self.children_ids, self.children, self.is_normalized, self.assigned_sprint_id)
     
     def __str__(self):
         
@@ -159,15 +160,19 @@ def load_input_data(input_file_path):
     with open(input_file_path) as input_file:
         input_dict = json.load(input_file)
     
-    sprints = load_sprint_data(input_dict)
+    sprints, id_to_sprint_dict = load_sprint_data(input_dict)
     stories, id_to_story_dict = load_story_data(input_dict)
 
-    return (sprints, stories, id_to_story_dict)
+    return (sprints, id_to_sprint_dict, stories, id_to_story_dict)
 
 
 def load_sprint_data(input_dict):
 
     sprints = []
+
+    # Dictionary mapping sprint ID (a number) to the corresponding Sprint object
+    id_to_sprint_dict = {}
+
     sprint_dicts_list = input_dict['sprints']
 
     for sprint_dict in sprint_dicts_list:
@@ -189,12 +194,14 @@ def load_sprint_data(input_dict):
             sprint_constructor_args_dict['assignee_total_capacities'] = sprint_dict['assignee_capacities']
 
         # Now that we've assembled all the arguments, use them to create a new Sprint object and add it to the list of Sprint objects
-        sprints.append(Sprint(**sprint_constructor_args_dict))
+        sprint = Sprint(**sprint_constructor_args_dict)
+        sprints.append(sprint)
+        id_to_sprint_dict[sprint.id] = sprint
     
     # To be safe, sort sprints by their end date (in ascending order)
     sprints.sort(key=attrgetter('end_date'))
 
-    return sprints
+    return (sprints, id_to_sprint_dict)
 
 
 # Given a string representation of a date, return the corresponding date object
@@ -343,7 +350,7 @@ def sort_stories(stories):
 # Slot stories into sprints, following the order of the 'stories' list (if story A appears before story B in the 'stories' list, then A will be slotted into a sprint before B) and the 'sprints' list (if sprint 1 appears before sprint 2 in the 'sprints' list, then we will attempt to slot stories into sprint 1 before sprint 2)
 # Note that, depending on how much space is left in each sprint, even though we try to slot story A into one of the sprints before trying to slot story B, if B is smaller than A, B might end up in an earlier sprint than A (i.e. if that sprint didn't have enough space for A, forcing A to go to the next sprint, but had enough space for B).
 # Thus, even though we have ensured (via normalization and sorting) that, if A is the parent of B, A appears before B in the sorted list of stories, that alone is NOT enough to guarantee that, after slotting the stories, B will not end up in an earler sprint than its parent A! Instead, as seen below, we might need to modify B's start date as well.
-def slot_stories(stories, sprints, max_date=MAX_DATE):
+def slot_stories(stories, sprints, id_to_sprint_dict, max_date=MAX_DATE):
 
     # The 'stories' and 'sprints' lists might be used even after this function is done -- thus, do NOT directly modify them!
 
@@ -386,7 +393,7 @@ def slot_stories(stories, sprints, max_date=MAX_DATE):
                 sprint.stories.append(story)
                 sprint.available_capacity -= story_size
                 available_stories.remove(story)
-                story.assigned_sprint = sprint
+                story.assigned_sprint_id = sprint.id
                 break
             
             elif sprint.available_capacity == 0:
@@ -411,8 +418,8 @@ def slot_stories(stories, sprints, max_date=MAX_DATE):
         for child in story.children:
 
             # If this story was assigned to a sprint, ensure that all the children's start dates are no earlier than the start of that sprint. This ensures that the children cannot be assigned to a sprint prior to the sprint that their parent was assigned to.
-            if story.assigned_sprint:
-                earliest_start_date_for_children = story.assigned_sprint.start_date
+            if story.assigned_sprint_id:
+                assigned_sprint = id_to_sprint_dict[story.assigned_sprint_id]
             
             # If this story was not assigned to any sprint, its children cannot be allowed to be assigned to any sprint either! The easiest way to achieve this is to set their start dates to a date guaranteed to be after the last sprint's end date.
             else:
