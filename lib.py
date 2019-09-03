@@ -413,15 +413,17 @@ def slot_stories(stories, sprints, id_to_sprint_dict, max_date=MAX_DATE):
             break
 
         # Thanks to normalization and story sorting, we know that, if this story has children, we have not yet attempted to slot them into a sprint yet. 
-        # If any of this story's children is smaller than this story, it might accidentally ending up slotted into a sprint before this story -- i.e. the sprint schedule calls for the child to be done before the parent! 
-        # To avoid this, we modify each child's start date below.
+        # If any of this story's children is smaller than this story, it might accidentally end up slotted into a sprint before this story -- i.e. the sprint schedule might end up calling for the child to be done before the parent! 
+        # To avoid this, after having attempted to slot this story above, we modify each of its children's start date below.
         for child in story.children:
 
-            # If this story was assigned to a sprint, ensure that all the children's start dates are no earlier than the start of that sprint. This ensures that the children cannot be assigned to a sprint prior to the sprint that their parent was assigned to.
+            # If this story was assigned to a sprint, ensure that all the children's start dates are no earlier than the start of that sprint -- i.e. ensure that the children cannot be assigned to a sprint prior to the sprint that their parent was assigned to.
             if story.assigned_sprint_id:
                 assigned_sprint = id_to_sprint_dict[story.assigned_sprint_id]
+                earliest_start_date_for_children = assigned_sprint.start_date
             
-            # If this story was not assigned to any sprint, its children cannot be allowed to be assigned to any sprint either! The easiest way to achieve this is to set their start dates to a date guaranteed to be after the last sprint's end date.
+            # If this story was not assigned to any sprint, its children cannot be allowed to be assigned to any sprint either! 
+            # The easiest way to achieve this is to set their start dates to a date guaranteed to be after the very last sprint's end date.
             else:
                 earliest_start_date_for_children = max_date
 
