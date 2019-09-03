@@ -252,7 +252,7 @@ def load_story_data(input_dict, default_end_date=MAX_DATE):
         stories.append(story)
         id_to_story_dict[story.id] = story
 
-    return stories, id_to_story_dict
+    return (stories, id_to_story_dict)
 
 
 # At this point, each story has a list of the (string) IDs of its children, but its list of the actual children themselves is empty -- populate the latter list with the children whose IDs are the corresponding elements in the former list.
@@ -432,8 +432,8 @@ def slot_stories(stories, sprints, id_to_sprint_dict, max_date=MAX_DATE):
     else:
 
         # It is possible to have stories remaining (unslotted) without having already placed them in remaining_stories:
-        # a) If there is not enough space in the remaining sprints to slot in the remaining stories, but the remaining sprints are NOT full!
-        # b) If the last sprint was perfectly filled when the final story in the 'stories' list was slotted in -- note that there are still other unslotted stories in the 'stories' list, but there wasn't enough space to slot them in, so they were skipped over before we got to this final story.
+        #   a) If there is not enough space in the remaining sprints to slot in the remaining stories, but the remaining sprints are NOT full!
+        #   b) If the last sprint was perfectly filled when the final story in the 'stories' list was slotted in -- note that there are still other unslotted stories in the 'stories' list, but there wasn't enough space to slot them in, so they were skipped over before we got to this final story.
         if available_stories:
             remaining_stories = available_stories
     

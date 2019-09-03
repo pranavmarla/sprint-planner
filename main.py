@@ -78,12 +78,14 @@ else:
 
 print()
 
+
 #! DEBUG
 # print('Stories, after slotting:')
 # for story in stories:
 #     print(repr(story))
 #     print('\t{}'.format(story))
 # print()
+
 
 # Create a more compact, consistent representation of the results, for easy comparison, and save to output JSON file.
 # Ensure that, given the same input, the same output is consistently generated!
