@@ -316,6 +316,8 @@ def normalize_story(story, children_values_dict, one_day=ONE_DAY):
         # Now that we've calculated the max importance and min end_date for this group of children, save those values to save us time with any future parents of this same group of children.
         children_values_dict[key] = (max_importance, min_end_date)
 
+    # Now that we've calculated the required values of this story's children, use them to normalize this story
+    
     if story.importance < max_importance:
         story.importance = max_importance
     
