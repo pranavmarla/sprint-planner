@@ -1,0 +1,274 @@
+Sprint Planning program notes:
+
+Overarching principle of how to sort stories:
+
+Highest priority stories first
+If same priority, earliest deadline stories first
+If same priority and deadline, BIGGEST size (story points) first (to more efficiently utilize sprint capacity -- i.e. minimize empty space in each sprint)
+
+Thus, this is a greedy algorithm.
+
+NOTE: 
+- Story points (story size) is ONLY meant for devs, to indicate how big the story is. Customer only cares about story PRIORITY (how important it is) -- they don't care about story points. So, doing more story points does NOT imply that we have delivered more value to the customer.
+- NOte that there is a difference between priority and value. What I'm using (priority) is just an arbitrary number to convey how important it is to customer, and that we should do it before something with a lower number. Also, in my experience, this is only given to overall objectives, not individual stories.
+Thus, 10 stories with priority 1 is NOT better than 1 story with priority 5 -- since it's priority, we just always do the priority 5 stories before priority 1 stories. If the number represented value to the customer, then potentially it might be better to do multiple low-value stories if the total value is big enough.
+- Program does not prescribe order in which stories are tackled WITHIN a sprint since, in theory, it doesn't matter -- if the sprint has enough capacity for all stories, then it doesn't matter which order they're done in.
+
+---
+
+If stories B,C depend on A:
+
+Ensure A's priority is >= max priority of B and C
+Ensure A's deadline is <= (closest deadline of B and C) - 1 day !!!
+(A needs to be min deadline - 1 day since earlier deadline is how we ensure that A is slotted out before B and C!)
+
+---------------------
+
+Implication:
+
+This rewards actually thinking about your stories and their priorities, deadlines, dependencies.
+This rewards smaller stories! Eg. If you only have 3 points left in your sprint, but your remaining hihg priority story is 5 points, then that slot will go to a smaller, lower priority story whereas, if the high priority 5 pointer was split into a 2 pointer and a 3 pointer, then at least some part of the high priority story could be done.
+
+NOTE: The scrum consensus online seems to be that, if you have extra capacity near the end of a sprint, the best option is NOT necessarily to pull in the highest priority story from the enxt sprint and start working on it early -- there might be multiple options better than that. But also, even if you DO pull in a story from the next sprint, you should only pull it in if you know you can finish it in the current sprint!
+Thus, if we have a 5 point story to be slotted and the current sprint has only 3 points left, my program should NOT informally split the story into 3+2 and smear it across the end of current sprint and beginning of next sprint -- it should move on to the next sprint that has 5 points available.
+
+---------------------
+
+Let's say we have a string of 10 stories in a dependency chain -- I fill up the sprint with the first 9, but there's no space for the 10th one. Is all that work useless then, without the final one? Should I not even bother doing any part of the dependency chain if I can't finish everything in that chain? Or can I assume that even doing just some of the prereqs means that some value has been delivered to the customer?
+The assumption is that every story delivers some value -- I think it's only tasks which have purely instrumental value in that they enable the final story, and my program doesn't have to worry about tasks. So, in this scenario, I think it's still worth doing the prereq stories, even if we don't get to the final ones.
+
+---------------------
+
+1) High priority stories need to be SLOTTED OUT before low priority stories
+
+Note the distinction here: High priority stories do not necessarily need to be done before (in an earlier sprint than) low priority stories, but they need to be scheduled out first.
+This is because, when all the sprints are full, you don't want to be in a situation where low priority stories were finished instead of high priority ones.
+That being said, in practice, since all the sprints are empty when you start slotting in the highest priority stories, the more important stories will end up taking up most of the earlier sprints -- they will only go to the next sprint when there is no more space for them (not that sprint is full, but that remaining empty space in sprint is not enough for the remaining high priority story)
+
+Thus, probably need to divide stories by priority, and schedule the highest priority ones first then, once they're all slotted in, schedule the next lowest priority stories, etc.
+
+Note: When you have a string of stories depending on each other, need to ensure they have consistent priority.
+Note that we are changing PRIORITY here, NOT story points!!
+Eg.
+If B depends on A, and B has priority of 10, it obviously doesn't make sense to give A a priority of 2. Thus, when recursing from B to A to determine earliest sprint we can work on B, remember B's priority and, IF A's priority is lesser than B's, update it to B's.
+Note that, if A is common dependency for 2 parallel stories B and C, with different priorities, then it is possible that A's priority might actually be larger than B's (if C's s larger than B's) -- in that case, do not update it to B's. End result is that A should have priority equal to the highest priority of all the stories that depend on A.
+
+-----
+
+It's better that high priority stories get first dibs on earlier sprints since it is more important that they get done and this gives you leeway to carry them over to the next sprint and bump out stories in the next sprint which are ASSUMED to be lower priority stories.
+
+---------------------
+
+2) When two stories have the same priority, the one with the earlier deadline gets done first.
+
+NOTE: This is how we ensure that stories in a dependency chain are done in the right order -- we already ensure that they all have the same priority, so we need to ensure that, if B depends on A, then A's deadline is at least 1 less than B's so that, if there's only space to do one of them in a sprint, we esure that A is picked and B is pushed to the next sprint.
+
+Note that, if A is common dependency for parallel stories B and C, and C's deadline is before B's, then at the end, A's should be 1 day before C's -- End result is that A's deadline should be 1 day before the earliest deadline of all the stories that depend on A.
+
+---------------------
+
+Note sure below makes sense. We want to start with stories that are the ends of their dependency chains -- aka the youngest kids.
+
+To identify them, look for stories with no kids but at least 1 parent (Note that we will need to keep updating this info (does story have a child/parent) for each story that we read in).
+
+Probably will need to make use of dynamic programming, where, for a particular set of kids whose highest priority and closest deadline has been calculated, store the set of kids and the priority and deadline values in a dict so that any coparents will not have to sweep the same set of kids and recalculate the same 2 values.
+
+
+---
+To ensure we can easily update all stories in dependency chain with right priority and deadline, need a sorted list of all stories, where stories at the end of their dependency chains (those with highest number of ancestors, which I am defining as both direct and indirect parents) are first in the list.
+
+Implementation:
+First, read in all stories and store them in dict. Will keep this dict around, to let us easily access any story by its ID.
+
+Then, for each story, determine the number of ancestors it has based on how many dependencies it has:
+If story A has no dependencies, it has no ancestors
+If story C has 2 dependencies (A and B), then the number of C's ancestors = the max number of ancestors that A and B has (i.e., if A has 2 and B has 3, then C has 3 ancestors).
+Thus, the number of ancestors of a story is equal to the max number of ancestors of all its parents.
+
+Finally, sort all these stories, in descending order of number of ancestors
+
+Somehow, need to EFFICIENTLY ensure all stories in a dependency chain have logical priority and deadline based on their children's.
+But, either going top down or bottom up, seemingly susceptible to increased time if, for example, a certain story has multiple children with increasing priority (so it and its parents have their priorities updated over and over again).
+
+---
+
+Hmm, maybe always only go one level down? So, don't recurse down the whole chain each time, just update your immediate kid?
+So, start with all stories with the highest number of ancestors -- for each of them, update only their immediate parent if necessary, without worrying if they have the same ancestor, etc. 
+REduces the number of iterations since only sticking to immediate parents, but still possible to have same immediate parent be updated over and over again if he has multiple kids.
+
+Ideally, for each story:
+1) Need a list of all my kids, so that I can find the highest priority and tightest deadline amongst them in 1 sweep
+2) Need a list of all my coparents, so that they can use the values I computed, instead of having to sweep our exact same set of kids over and over again. Note that 2 stories are coparents if they share the exact same set of kids.
+
+ALternatively, since list of parents for each story is given to us, whereas list of kids is not:
+1) Need a list of all my siblings (2 stories are siblings if they share the exact same set of parents), so that I can sweep us once and get the highest priority and tightest deadline amongst us
+2) Need a list of all my parents, so that I can update them all in 1 swoop. 
+Of course, then you need a way to now skip all my siblings, and not go through this exact same process again for all of them.
+
+When initially reading in stories, when we're given the list of parents for each story, for each story, do this to also build up list of siblings:
+
+BUT, still possible for a parent to have to be repeatedly updated, since not all its kids might be part of the same siblings group.
+Eg. Stories A,B,C all have parents 1,2: A,B,C are siblings who depend on 1,2. A,B,C will be swept once, and 1,2 will be updated once. 
+Story D has parents 2,3: Since D is not sibling with A,B,C, wasn't included in sweep -- thus, 2 will get updated again.
+Then again, although this is still potentially inefficient in that same parents might get updated multiple times, it's still vastly more efficient than naive approach of having each kid update each of his parents.
+
+Maybe siblings definition shouldn't be so strict -- go back to idea of, for each story, caring about list of kids?
+But then again that's inefficient since 1,2 share the same kids A,B,C, yet both 1 and 2 will have to independently sweep A,B,C.
+
+Easiest is to touch every story, but that is most ineffciient. SO, maybe piggy back onto a time when we HAVE to touch every story -- when reading them in.
+Actually, that's not true -- for each story, we read in the list of IDs corresponding to its parents, but we don't read in the parents themselves.
+
+
+
+
+
+
+
+
+
+
+#########################################
+
+Testing (Adversarial test cases):
+
+1) Bunch of low priority stories with close deadlines and few high priority stories with far/no deadline:
+At the end, it should not be the case that a low priority story is being done instead of a high priority one.
+Note that you could end up with a case where there is no space for a big high priority story, so instead a small low priority one was slotted in -- this is ok because, even though a high priority story is not being done but a low priority one is, there was no way to do the high priority one due to lack of space, so the small low priority one is not actually stealing the high priority one's slot.
+
+
+
+
+
+
+
+
+
+
+#########################################
+
+1) Take in list of sprints as json file input.
+Each sprint needs end-date, in a date format that Python can compare and sort by.
+-----
+>>> from datetime import date
+>>> date.today()
+datetime.date(2019, 3, 4) # 3 is month, 4 is day.
+>>> print(date.today())
+2019-03-04
+>>> date(2019, 2, 28)
+datetime.date(2019, 2, 28)
+
+>>> d1 = date(2019, 2, 28)
+>>> d2 = date(2019, 4, 5)
+>>> d1 > d2
+False
+>>> d1 == d2
+False
+>>> d1 < d2
+True
+
+# Below was done when 'today' was different from above
+>>> d2 - date.today()
+datetime.timedelta(-13)
+>>> date.today() - date(2019, 4, 17)
+datetime.timedelta(1) # 1 is no. of days between the two dates.
+
+See strptime()
+
+-----
+Each sprint needs numerical capacty/velocity -- how many story points can be done in that sprint.
+Maybe optional string name?
+Unique numerical ID can be assigned by my code.
+For safety, in case they don't supply sprints in order, sort by deadline (end-date).
+
+2) Take in list of stories as json file input
+Each story needs a unique string ID, to be supplied by customer
+Each story needs numerical story points (accept any non-negative number, including 0 and fractions?)
+
+If a story depends on 1/more other stories, it needs to list the IDs of those other stories
+---------------
+
+The below doesn't make sense. Unless a story is 5 points or something, not sure you can say beforehand that, because story B depends on story A, they cannot be in the same sprint.
+Thus, instead of forcing customers to guesstimate beforehand whether they can be in the same sprint or not, might be better to simply amend our algorithm so that:
+If story B depends on story A, and A is in sprint 2, then the earliest that B can be in is also sprint 2 -- thus, the only real restriction is that B cannot be in a sprint PRIOR to the one that A is in -- easiest way to do this is to ensure that, if B depends on A, A's deadline is = B's deadline - 1 --> this ensures that A is always slotted in before B (since they are also guaranteed to have the same priority).
+
+See if this algorithm actually helps us the way the previous one did, or if every story will end up in sprint 1.
+
+########
+
+REJECTED:
+(Note that, here, "depends on" is defined as "cannot be done in the same sprint" So, if story B is dependent on story A, and story A is in sprint 1, the earliest that story B can be worked on is sprint 2. Thus, if B colloquially 'depends' on A, but they're both so small that they can be done one after the other in the same sprint, then do NOT list A as a dependency for B in the json input --> don't do this, too confusing to user For clarity, maybe use the terms "hard dependency" and "soft dependency".
+Perhaps, when customer says "story B depends on A", let them also specify whether that's a hard dependency or a soft dependency, so that customer doesn't have to worry about the hacky way of implementing soft dependencies -- we do that for them. 
+-----------------
+
+#########################
+REJECTED:
+Assuming "B is dependent on A" means "If A is scheduled for sprint 1, the earliest that B can be scheduled is sprint 2", then give advice for this edge case:
+If B is techincally dependent on A, but they're small enough to both be done in the same sprint, then we do not report A as a dependency for B in the json file.
+If A and B are slotted into the same sprint, then the relative order doesn't matter -- i.e. if B is put into sprint 1 before A, it doesn't matter since the customer decides what order to tackle the stories within a sprint.
+BUT, if (because of the sprint running out of capacity), A and B get slotted into different sprints, we want to avoid the possibility of B getting slotted into sprint 1 and A getting slotted into the next sprint 2 (because the code wrongly thinks they don't depend on each other)!
+Thus, to deal with this case, customer should set A's deadline to be before B's (if B has no deadline, just choose the end-date of the last sprint) -- this will ensure that A is always slotted before B!
+
+(Note: If story B depends on A, and C depends on B, then can either say in the json "C depends on both B and A, B depends on A" OR "C depends on B, B depends on A" -- same either way. Also, if you say "C depnds on B and A", that implies that BOTH B AND A have to be completed before C can be started)
+---------------
+
+Optional string name for story
+Optional numerical priority indicating how important it is that this story be done: For simplicity, to match with how ppl assign business value in our PI planning, larger number means greater priority. If not supplied, default to 0. Note that this is not related to story points.
+Optional deadline by which story has to be completed -- if not supplied, default to end-date of last sprint.
+
+Note: My program doesn't prescribe order within a sprint, since the number of ppl available will determine which stories are done in parallel in that sprint.
+
+3) When processing story json file:
+In case they don't supply stories in order, we will need to LATER sort them by dependency. To save time though, any story we process that lists no dependencies can automatically be sorted right now into dependency layer 0 (the first dependency layer, for stories that do not depend on other stories and can potentially be tackled in the very first sprint -- so maybe rename confusing dependency layer stuff to instead be earliest sprint it can be tackled in?)
+
+4) After reading in all stories into 1 list:
+Need to sort them in terms of dependencies (earliest sprint they can be tackled in). Use this recursive algorithm: Assuming story B depends (hard dependency) on story A, earliest sprint that story B can be tackled in is story A's earliest sprint + 1. Obviously, if A's earliest sprint is undefined because it depends on another story, keep recursing until you hit a story whose earliest sprint has been determined.
+At the end, stories should be in buckets corresponding to earliest sprint they can be tackled in.
+Note: C could depend on two parallel stories B and A (where B does NOT depend on A). In that case, C's earliest sprint should be 1 + the LATER 'earliest sprint' of A and B.
+Note that, if 50 stories are in bucket 1, that does NOT imply they will all be done in sprint 1. It only means that, if sprint 1 had infinite capacity, they COULD hypothetically be all done in parallel in that same sprint 1, because none of them depend on each other.
+
+At the same time, while recursing, keep track of priority as follows:
+If B depends on A, and B has priority of 10, it obviously doesn't make sense to give A a priority of 2. Thus, when recursing from B to A to determine earliest sprint we can work on B, remember B's priority and, IF A's priority is lesser than B's, update it to B's.
+Note that, if A is common dependency for 2 parallel stories B and C, with different priorities, then it is possible that A's priority might actually be larger than B's -- in that case, do not update it to B's. End result is that A should have priority equal to the highest priority of all the stories that depend on A.
+
+At the same time, while recursing, modify story deadlines as follows:
+If B depends on A, but A's deadline is same or AFTER B's deadline (same could happen if no deadline was supplied for both, in which case we automatically set it to last sprint deadline), then change A's deadline to be 1 day before B's. This ensures that, when we later sort stories by deadline, we don't need to worry about accidentally starting work on story B BEFORE starting work on its dependency (story A).
+Again, if A is common dependency for parallel stories B and C, and C's deadline is before B's, then at the end, A's should be 1 day before C's -- End result is that A's deadline should be 1 day before the earliest deadline of all the stories that depend on A.
+
+5)
+Actually, below won't work!
+Imagine we have a bunch of low priority stories with close deadlines one after the other, and one big story with a deadline of the end of the sprint. If we blindly prioritize deadlines over priority, then we can end up filling the sprint with all the low priority stuff and not having enough time to do the high priority one, which is clearly bad.
+At the end of the day, it is better to miss a deadline for a low priority story than for a high priority story.
+Thus, maybe switch them around? Do high priority first and, if 2 stories have the same priority, THEN we do the one with earlier deadline first.
+
+#############
+REJECTED:
+In general, schedule using the following rules:
+Stories with earliest deadlines need to be done first.
+If 2 stories have same deadline, story with highest priority needs to be done first.
+If story B depends on story A, and story A is in sprint 3, earliest that B can be done is in sprint 4.
+
+Thus:
+6) From step 4, have 1 list with stories in buckets, corresponding to earliest sprint that they can be worked on.
+
+Actually, only sort the earliest sprint bucket that you are working on, since any leftover stories from current bucket (that can't fit into corresponding sprint) will spill over into next bucket and effectively become part of next bucket -- thus, pointless to have already sorted that next bucket ahead of time, since now there are new stuff adde to it and it has to be resorted anyway. 
+########
+Within each bucket, sort stories by priority -- where stories share the same priority, sort them by deadline.
+
+7) 
+For scheduling sprint 1, makes sense to start off by looking at stories in bucket 1 (stories that can be worked on in sprint 1 at the earliest). Within that bucket, stories should already be sorted by deadline and priority: just keep pulling stories in that sorted order until:
+a) Sprint is full
+OR
+b) That bucket is empty
+
+If b, that means that even after slotting every story that can be worked on in sprint 1, we still have capacity left over in sprint 1. Note that this capcity is wasted though, since we cannot slot any more stories into sprint 1 -- all the remaining stories have dependencies on stories in sprint. Thus, nothing to do here -- move on to sprint 2.
+
+If a, that means that sprint 1 is full, but bucket 1 still has stories. Move on to sprint 2.
+
+Actually, let's say you're in situation a. Sprint 1 is full, but you still have stories whose earliest sprint is 1 ('ES1 stories). Now you come to sprint 2. You should NOT just start blindly pulling the top ES1 story because there might be an ES2 story that is higher priority than ES1 -- in other words, need to sort both ES2 AND leftover ES1 stories by priority and then deadline, and only then start slotting sprint 2. So, the leftover ES1 stories effectively become ES2 stories now, by virtue of the fact that Sprint 1 is full, so they earleist sprint they can be done in is sprint 2.
+############
+For scheduling sprint 2, start from the earliest bucket that still has stories in it, and do the same as in sprint 1 above -- keep repeating this for all sprints.
+
+8) At the end, if all the stories could not be fitted into the given sprints, do NOT throw an error. Instead, clearly print out all the sprints with their assigned stories, and clearly note the overflow stories that could not be fitted in.
+
+9) When calling script, create flag for optional output file that will contain all output. If no such file is provided, output will be printed to screen --> Is this really necessary though? They can just redirect the stdout to a file if they want to.
+NOTE: To make testing easier, might be best to output as JSON as well (maybe with an option to give it a prettier, more readable output format)

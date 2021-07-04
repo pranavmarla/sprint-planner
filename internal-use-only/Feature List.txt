@@ -1,0 +1,36 @@
+Unlike in tools like JIRA where you manually move stoies around (so you know what the change is), here it's harder to see what's changed since the program is doing it -- so, actually more importatnt than I thought to clearly say which stories moved from which sprint to which sprint
+Automatically take previous output (always name output file using name of input file) and, if it exists, print diff when overwriting output file with current run's output.
+######
+When people run this repeatedly, need easy way to see what has changed -- maybe optionally take in previous run's output and only display what has changed?
+
+
+The current system where, if A -> B, we set A's deadline to be 1 day less than B's is an effective hack since it ensures stories are sorted such that parents are before kids, but it doesn't make sense conceptually -- in theory, if the stories are small enough, no reason why both A and B can't have the same deadline (since they can be done on the same day).
+So, modify normalization() so that A's deadline is <= B's, instead of <= (B's - 1), and come up with another way to ensure parents are sorted before kids.
+#####
+Problem: normalization() recursion ends when story.is_normalized is true, which we set for stories with no kdis when we read them in -- could move that into normalization() itself, would just result in an extra recursion through the last childless kids.
+But this only makes sense for importance and end_date, since those are limited by kids.
+start_date is limited by parents -- so, a story with no kids is NOT Automatically normalized here since its start date might not be consistent with that of its parent -- thus, probably need to keep track of parents as well.
+
+With end_date and importance, once a group of kids has been surveyed once, they're done -- doesn't matter which parent initiated, since those values don't depend on parent.
+But start_date does depend on parent!
+in fact,probs need a second recursion, starting from kids and going up to parents to get latest (max) start_date of parents.
+
+Also, change normalization terminology to 'is_consistent' and 'make_consistent()' for clarity.
+
+Also, in normalization(), ensure that, if A -> B and A has a start date, then B's start date is >= A's.
+(Again, if A and B are small enough, they can be done on same day so it's okay to have same start date).
+
+
+
+Or, for simplicity, just replace the word 'priority' with something unambiguous like 'importance', where it's clearer that bigger value = better.
+#######
+Defining priority as a number where bigger is better is holdover from when I confused priority with business value.
+Intuitively, saying "A is my 10th priority, but B is my first priority" means that B is MORE important than A.
+
+
+Maybe reconsider current hack to ensure parent stories get done before kids and instead, if you want to slot a story that has parents, check to see if each parent has already been slotted in first? Although, then each story will also need a list of all its parents.
+Also, then I'll ahve to repeatedly traverse the same list of stories -- i.e. In list of stories I'll come across kid and try to slot kid, then when I realize I haen't had a chance to slot its parent yet I'll skip kid, I'll eventually come across parent and slot parent, and now I have to somehow remember to go back and try AGAIN to slot kid!
+
+Scrape stories from JIRA via API -- might not be generic enough to be worth doing open source.
+
+When people run this repeatedly, need easy way to see what has changed -- maybe optionally take in previous run's output and only display what has changed?
